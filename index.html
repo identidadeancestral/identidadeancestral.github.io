@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lei da Identidade Ancestral — Manifesto</title>
+<meta name="description" content="Pela devolução dos nomes que o Brasil alterou no caminho. Manifesto pela Lei da Identidade Ancestral — uma iniciativa cidadã para corrigir, sem processo judicial, a grafia de nomes de imigrantes históricos e seus descendentes.">
+
+<!-- Compartilhamento (WhatsApp, X, Facebook) -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Manifesto pela Identidade Ancestral">
+<meta property="og:description" content="Pela devolução dos nomes que o Brasil alterou no caminho.">
+<!-- Endereço do site (já preenchido). Se um dia usar domínio próprio, troque nas duas linhas abaixo. -->
+<meta property="og:url" content="https://identidadeancestral.github.io/">
+<meta property="og:image" content="https://identidadeancestral.github.io/capa.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#ECEBE3;
+    --paper-2:#E4E2D8;
+    --ink:#1B2A4A;
+    --ink-soft:#46506A;
+    --ink-faint:#8A8F9C;
+    --seal:#B5402F;
+    --seal-bright:#DB7264;
+    --on-dark:#EFEDE4;
+    --on-dark-soft:#B9BDC9;
+
+    --display:'Fraunces', Georgia, 'Times New Roman', serif;
+    --body:'Spectral', Georgia, serif;
+    --ui:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono:ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+    --measure:36rem;
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:1.0625rem;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--seal);color:var(--on-dark);}
+  a{color:inherit;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100svh;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:3rem 1.4rem 4rem;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:var(--ui);
+    font-size:.72rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--seal);
+    font-weight:600;
+    margin:0 0 2.4rem;
+  }
+  /* the name correction — the page's signature */
+  .correction{
+    font-family:var(--display);
+    line-height:1;
+    margin-bottom:2.6rem;
+  }
+  .correction .wrong{
+    display:inline-block;
+    position:relative;
+    font-size:clamp(2.6rem,12vw,4.2rem);
+    font-weight:400;
+    color:var(--ink-faint);
+  }
+  .correction .wrong::after{
+    content:"";
+    position:absolute;left:-4%;right:-4%;top:54%;
+    height:2px;background:var(--seal);
+    transform:scaleX(1);transform-origin:left center;
+  }
+  .correction .arrow{
+    display:block;
+    font-family:var(--ui);
+    font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:.85rem 0 .55rem;
+  }
+  .correction .right{
+    display:inline-block;
+    position:relative;
+    font-size:clamp(3.4rem,17vw,6rem);
+    font-weight:600;
+    color:var(--ink);
+    padding-bottom:.12em;
+  }
+  .correction .d{color:var(--seal);}
+  .correction .right::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:0;
+    height:3px;background:var(--seal);
+    transform:scaleX(1);transform-origin:left center;
+  }
+  .hero h1{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(1.5rem,5.5vw,2.1rem);
+    line-height:1.15;
+    margin:0 0 .7rem;
+    max-width:20ch;
+  }
+  .hero .lede{
+    font-style:italic;
+    color:var(--ink-soft);
+    max-width:30ch;
+    margin:0 auto;
+    font-size:1.06rem;
+  }
+  .scrollcue{
+    position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);
+    font-family:var(--ui);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .scrollcue span{display:block;font-size:1rem;margin-top:.2rem;}
+
+  /* reveal only when motion is welcome; content visible by default otherwise */
+  @media (prefers-reduced-motion: no-preference){
+    .eyebrow{opacity:0;animation:fade .8s .1s forwards;}
+    .correction .wrong{opacity:0;animation:fade .7s .5s forwards;}
+    .correction .wrong::after{animation:strike .5s 1.25s both;}
+    .correction .arrow{opacity:0;animation:fade .6s 1.7s forwards;}
+    .correction .right{opacity:0;transform:translateY(.3em);animation:rise .8s 2.0s forwards;}
+    .correction .right::after{animation:strike .6s 2.7s both;}
+    .hero h1{opacity:0;animation:fade .9s 2.8s forwards;}
+    .hero .lede{opacity:0;animation:fade .9s 3.1s forwards;}
+    .scrollcue{opacity:0;animation:fade 1s 3.6s forwards;}
+  }
+  @keyframes fade{to{opacity:1;}}
+  @keyframes rise{to{opacity:1;transform:none;}}
+  @keyframes strike{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+
+  /* ---------- MANIFESTO ---------- */
+  .manifesto{
+    max-width:var(--measure);
+    margin:0 auto;
+    padding:1rem 1.4rem 4.5rem;
+  }
+  .rule{
+    width:42px;height:2px;background:var(--seal);
+    border:0;margin:0 auto 3rem;
+  }
+  .manifesto p{margin:0 0 1.35rem;}
+  .manifesto p.first{font-size:1.18rem;line-height:1.6;}
+  .manifesto .law{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:1.3rem;
+    color:var(--ink);
+    text-align:center;
+    margin:2.4rem 0;
+  }
+  .manifesto em{color:var(--ink);}
+  .manifesto strong{font-weight:500;color:var(--ink);}
+  .cry{
+    font-family:var(--display);
+    font-size:clamp(1.5rem,6vw,2rem);
+    line-height:1.25;
+    text-align:center;
+    color:var(--ink);
+    margin:3rem 0 2.4rem;
+    font-weight:500;
+  }
+  .cry b{color:var(--seal);font-weight:600;}
+  .sign{text-align:center;font-family:var(--ui);margin-top:2.5rem;}
+  .sign .name{font-family:var(--display);font-weight:600;font-size:1.12rem;color:var(--ink);}
+  .sign .meta{font-size:.86rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.5;}
+  .sign .meta em{font-style:italic;}
+
+  /* ---------- RECORD (dark zone): seal + support ---------- */
+  .record{
+    background:var(--ink);
+    color:var(--on-dark);
+    padding:4rem 1.4rem 4.5rem;
+  }
+  .record .inner{max-width:var(--measure);margin:0 auto;}
+
+  .seal{
+    border:1px solid rgba(239,237,228,.22);
+    border-radius:3px;
+    padding:1.5rem 1.4rem;
+    margin-bottom:3.5rem;
+  }
+  .seal .label{
+    font-family:var(--ui);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--seal-bright);font-weight:600;margin:0 0 .7rem;
+  }
+  .seal p.desc{margin:0 0 1.2rem;font-size:.97rem;color:var(--on-dark);line-height:1.6;}
+  .seal dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-family:var(--ui);font-size:.8rem;}
+  .seal dt{color:var(--on-dark-soft);}
+  .seal dd{margin:0;color:var(--on-dark);}
+  .seal .hash{
+    font-family:var(--mono);font-size:.74rem;line-height:1.5;
+    word-break:break-all;color:var(--on-dark);
+    margin:.5rem 0 1.4rem;
+    padding:.7rem .8rem;background:rgba(0,0,0,.18);border-radius:3px;
+  }
+  .seal .hashlabel{
+    font-family:var(--ui);font-size:.7rem;letter-spacing:.04em;
+    color:var(--on-dark-soft);margin:0;
+  }
+  .nets{display:grid;gap:0;}
+  .net{
+    padding:1.1rem 0;
+    border-top:1px solid rgba(239,237,228,.16);
+    display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;
+  }
+  .net:last-child{padding-bottom:.2rem;}
+  .net .who{flex:1 1 9rem;min-width:0;}
+  .net .net-name{
+    font-family:var(--ui);font-size:.9rem;font-weight:600;color:var(--on-dark);
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .net .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--seal-bright);flex:none;}
+  .net .when{font-family:var(--mono);font-size:.74rem;color:var(--on-dark-soft);margin-top:.25rem;}
+  .verify{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-family:var(--ui);font-size:.85rem;font-weight:600;letter-spacing:.02em;
+    text-decoration:none;color:var(--on-dark);
+    border:1px solid var(--seal-bright);
+    padding:.7rem 1.2rem;border-radius:999px;
+    transition:background .2s,color .2s;
+  }
+  .verify:hover,.verify:focus-visible{background:var(--seal-bright);color:var(--ink);}
+  .verify.sm{font-size:.78rem;padding:.55rem 1rem;}
+  .verify.pending{
+    border-color:rgba(239,237,228,.28);color:var(--on-dark-soft);
+    cursor:default;pointer-events:none;
+  }
+  .docdl{margin-top:1.6rem;padding-top:1.5rem;border-top:1px solid rgba(239,237,228,.16);}
+  .doclink{
+    display:inline-block;font-family:var(--ui);font-size:.9rem;font-weight:600;
+    text-decoration:none;color:var(--on-dark);
+    border-bottom:1px solid var(--seal-bright);padding-bottom:2px;
+  }
+  .doclink:hover,.doclink:focus-visible{color:var(--seal-bright);}
+  .docnote{font-family:var(--ui);font-size:.78rem;color:var(--on-dark-soft);margin:.7rem 0 0;line-height:1.55;}
+
+  .support h2{
+    font-family:var(--display);font-weight:500;
+    font-size:clamp(1.6rem,6vw,2.2rem);line-height:1.2;
+    margin:0 0 1rem;color:var(--on-dark);
+  }
+  .support p.intro{font-size:1.02rem;color:var(--on-dark);margin:0 0 2rem;max-width:34ch;}
+  .support p.intro b{color:var(--seal-bright);font-weight:500;}
+
+  form.signup{margin:0 0 1.4rem;}
+  form.signup label{
+    display:block;font-family:var(--ui);font-size:.78rem;letter-spacing:.04em;
+    color:var(--on-dark-soft);margin-bottom:.55rem;
+  }
+  .field{display:flex;gap:.55rem;flex-wrap:wrap;}
+  form.signup input[type=email]{
+    flex:1 1 14rem;min-width:0;
+    font-family:var(--ui);font-size:1rem;
+    padding:.85rem 1rem;border-radius:6px;
+    border:1px solid rgba(239,237,228,.3);
+    background:rgba(239,237,228,.06);color:var(--on-dark);
+  }
+  form.signup input[type=email]::placeholder{color:var(--on-dark-soft);}
+  form.signup input[type=email]:focus-visible{outline:2px solid var(--seal-bright);outline-offset:1px;}
+  .btn-primary{
+    font-family:var(--ui);font-size:.95rem;font-weight:600;
+    padding:.85rem 1.5rem;border:0;border-radius:6px;cursor:pointer;
+    background:var(--seal);color:#FBF7EF;
+    transition:background .2s;
+  }
+  .btn-primary:hover,.btn-primary:focus-visible{background:var(--seal-bright);color:var(--ink);}
+  .consent{font-family:var(--ui);font-size:.74rem;color:var(--on-dark-soft);margin:.7rem 0 0;line-height:1.5;}
+
+  .ecidadania{
+    margin-top:2.4rem;padding-top:2rem;border-top:1px solid rgba(239,237,228,.16);
+  }
+  .btn-ghost{
+    display:inline-block;font-family:var(--ui);font-size:.95rem;font-weight:600;
+    text-decoration:none;color:var(--on-dark);
+    border:1px solid rgba(239,237,228,.4);
+    padding:.85rem 1.6rem;border-radius:6px;
+    transition:border-color .2s,background .2s;
+  }
+  .btn-ghost:hover,.btn-ghost:focus-visible{border-color:var(--seal-bright);background:rgba(219,114,100,.1);}
+  .ecidadania .note{font-family:var(--ui);font-size:.78rem;color:var(--on-dark-soft);margin:.8rem 0 0;line-height:1.5;}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:#16223C;color:var(--on-dark-soft);
+    font-family:var(--ui);font-size:.8rem;line-height:1.7;
+    text-align:center;padding:2.4rem 1.4rem;
+  }
+  footer .org{color:var(--on-dark);}
+  footer a{color:var(--on-dark);text-decoration:none;border-bottom:1px solid rgba(239,237,228,.3);}
+
+  :focus-visible{outline:2px solid var(--seal);outline-offset:2px;}
+  @media (max-width:480px){
+    .seal dl{grid-template-columns:1fr;gap:.1rem .5rem;}
+    .seal dt{margin-top:.5rem;}
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <p class="eyebrow">Lei da Identidade Ancestral</p>
+    <div class="correction" aria-label="Eije, corrigido para Eiji">
+      <span class="wrong">Eij<span class="d">e</span></span>
+      <span class="arrow">corrigido para</span>
+      <span class="right">Eij<span class="d">i</span></span>
+    </div>
+    <h1>Manifesto pela Identidade Ancestral</h1>
+    <p class="lede">Pela devolução dos nomes que o Brasil alterou no caminho.</p>
+    <div class="scrollcue">leia<span>↓</span></div>
+  </header>
+
+  <main>
+    <section class="manifesto" aria-label="Manifesto">
+      <hr class="rule">
+
+      <p class="first">Meu avô chamava-se <strong>Eiji Umeda</strong>. Nos registros brasileiros, tornou-se Eije. Uma única vogal trocada pela mão apressada de um escrivão — e um nome que havia atravessado gerações no Japão passou a designar um homem que, a rigor, nunca existiu.</p>
+
+      <p>Ele desembarcou em 1934, a bordo do <em>Hawaii Maru</em>, com a bagagem de quem deixa tudo para trás menos a própria história. Essa história estava no nome. E o nome se perdeu na travessia — não no mar, mas no balcão do cartório.</p>
+
+      <p>Levei anos para reconstruir o que aquela letra apagou. O resultado virou um livro — <em>Eiji não Eije</em> —, cujo título é, ele próprio, uma correção: a afirmação teimosa de que havia um nome verdadeiro sob a grafia errada. Mas, ao pesquisar, descobri que a minha família não era exceção. Era regra.</p>
+
+      <p>Entre 1850 e 1980, o Brasil recebeu milhões de imigrantes — japoneses, italianos, alemães, árabes, judeus, poloneses, ucranianos, armênios, gregos, coreanos, chineses e tantos outros. Os escrivães que os registraram, em sua maioria, não conheciam aqueles alfabetos. Escreviam de ouvido, no tempo curto de uma fila. Assim, irmãos foram registrados com sobrenomes diferentes; acentos sumiram; nomes foram traduzidos, abreviados, recriados. Não houve maldade. Houve pressa e desconhecimento. Mas o efeito durou gerações: famílias separadas dos próprios países de origem por causa de uma letra.</p>
+
+      <p>Quando se perde o nome, perde-se mais do que uma palavra. Perde-se a chave de um arquivo, a linha que liga uma pessoa ao seu avô, o documento que comprova de onde se veio. Perde-se o direito de provar quem se é.</p>
+
+      <p class="law">Por isso escrevi a Lei da Identidade Ancestral.</p>
+
+      <p>É um anteprojeto que cria um direito simples e até hoje inexistente: o de qualquer descendente corrigir, diretamente no cartório e sem processo judicial, a grafia deformada do nome de seu antepassado imigrante — inclusive de quem já morreu —, restaurando-a a partir dos documentos do país de origem. Cria também a Certidão de Linhagem Ancestral, que reconstitui a cadeia familiar rompida, e abre caminho para o resgate de sobrenomes inteiramente suprimidos, como os das mulheres apagadas dos registros. E olha para o futuro: determina que os novos imigrantes tenham seus nomes registrados corretamente, para que esta injustiça não se repita.</p>
+
+      <p>Não sou candidato a nada. Não represento partido algum. Não busco cargo, foro nem lucro. Sou um cidadão, descendente de imigrantes, que decidiu transformar uma ferida particular num instrumento público. Redigi este anteprojeto por conta própria, com rigor técnico, e o <strong>ofereço gratuitamente ao Congresso Nacional</strong> — a qualquer parlamentar, de qualquer partido, que tenha a coragem moral de adotá-lo.</p>
+
+      <p>Faço isto publicamente, e por escrito, por uma razão: para que a origem desta proposta fique registrada. Não pelo crédito em si, mas porque a história desta lei é inseparável da história das famílias que ela pretende reparar — e a primeira delas é a minha.</p>
+
+      <p>A quem ler este manifesto: se você também carrega um nome que foi alterado no caminho, esta causa é sua. Se é parlamentar, o texto está pronto e à sua disposição. Se é jornalista, pesquisador ou parte de uma comunidade de imigração, ajude a torná-la conhecida.</p>
+
+      <p>O Brasil foi construído pela força de milhões de pessoas que vieram de longe. É tempo de devolver os nomes que se alteraram na chegada.</p>
+
+      <p class="cry"><b>Eiji, não Eije.</b><br>E, com ele, todos os outros.</p>
+
+      <div class="sign">
+        <div class="name">Wagner Toshiro Umeda</div>
+        <div class="meta">
+          Autor do anteprojeto da <em>Lei da Identidade Ancestral</em><br>
+          25 de junho de 2026 — Dia do Imigrante
+        </div>
+      </div>
+    </section>
+
+    <section class="record" aria-label="Registro e apoio">
+      <div class="inner">
+
+        <div class="seal">
+          <p class="label">Autoria registrada em blockchain</p>
+          <p class="desc">A autoria e a anterioridade do anteprojeto desta lei estão gravadas em duas blockchains públicas e independentes, com data e hora — verificáveis por qualquer pessoa.</p>
+          <p class="hashlabel">Hash do documento (idêntico nas duas redes)</p>
+          <div class="hash">c57148efd8466c5506e5a25188bf579ed63b3f4c56d46ed31dcd30ad5b9f6eb2</div>
+
+          <div class="nets">
+            <div class="net">
+              <div class="who">
+                <div class="net-name"><span class="dot"></span>Ethereum Classic</div>
+                <div class="when">24/06/2026 20:27:54 (GMT-03:00)</div>
+              </div>
+              <a class="verify sm" href="https://etc.blockscout.com/tx/0xfd440a97bd12a0da0469f3869d8f1fa92f96283c46542234bbca234b452121ee" target="_blank" rel="noopener">Verificar →</a>
+            </div>
+
+            <div class="net">
+              <div class="who">
+                <div class="net-name"><span class="dot"></span>Decred</div>
+                <div class="when">24/06/2026 21:08:06 (GMT-03:00)</div>
+              </div>
+              <!-- Verificação da Decred (dcrdata) -->
+              <a class="verify sm" href="https://dcrdata.decred.org/tx/fb55e976552479e0bcf3c16d593f66019c46d009f2d68fb47ca3c9ed2e4f3a5c" target="_blank" rel="noopener">Verificar →</a>
+            </div>
+          </div>
+
+          <div class="docdl">
+            <a class="doclink" href="Lei_Identidade_Ancestral_Minuta_v9.pdf" download>↓ Baixar o anteprojeto (PDF)</a>
+            <p class="docnote">Baixe o documento e confira você mesmo: o SHA-256 do arquivo deve ser idêntico ao hash acima. É a mesma prova, na sua mão.</p>
+          </div>
+        </div>
+
+        <div class="support">
+          <h2>Apoie esta causa</h2>
+          <p class="intro">Esta proposta pode chegar ao Senado como iniciativa cidadã. Para isso, precisa de <b>20 mil apoios</b> no portal e-Cidadania. Deixe seu e-mail e avisaremos no dia em que o apoio abrir.</p>
+
+          <!-- Formulário conectado ao Brevo (lista: Apoiadores — Lei da Identidade Ancestral) -->
+          <form class="signup" method="POST"
+                action="https://c96ab225.sibforms.com/serve/MUIFAAZXXrb6Wsd87lmyV85VTT5LCU1KCtkiCbhxruEKCl7kJSn0HLzaV5XFjWMWWB0TK2NtNe5Bai6Z3wjttiDxMTsQe6gfdQGfHT_fx5GWt7ufEYRPdMNOJa5fofJyqZlWgzZRgC5c-QI0aB3xbADRljUQaksm8gIkitXRNWpwTSBy-sxvHWztOhBlYTXzVcV57aFPvXWZEFfT0A==">
+            <label for="email">Receba o aviso de abertura do apoio</label>
+            <div class="field">
+              <input id="email" type="email" name="EMAIL" placeholder="seu@email.com" required autocomplete="email">
+              <button class="btn-primary" type="submit">Quero ser avisado</button>
+            </div>
+            <p class="consent">Usaremos seu e-mail apenas para avisar sobre esta iniciativa. Sem spam; você pode sair quando quiser.</p>
+            <!-- Campos exigidos pelo Brevo: anti-robô (deixe vazio) e idioma -->
+            <input type="text" name="email_address_check" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <input type="hidden" name="locale" value="pt">
+          </form>
+
+          <div class="ecidadania">
+            <!-- Quando a Ideia Legislativa estiver no ar, troque o href "#" pela URL do e-Cidadania. -->
+            <a class="btn-ghost" href="#" rel="noopener">Apoiar no e-Cidadania</a>
+            <p class="note">O apoio é gratuito e leva cerca de um minuto, com login gov.br. Link disponível na abertura.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><span class="org">Iniciativa cidadã, sem vínculo partidário.</span><br>
+    Wagner Toshiro Umeda · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a></p>
+  </footer>
+
+</body>
+</html>
