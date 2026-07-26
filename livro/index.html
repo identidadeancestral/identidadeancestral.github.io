@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eiji, não Eije — memórias de uma família imigrante</title>
+<meta name="description" content="Um homem. Um nome. Cinco grafias erradas. A travessia de Eiji e Some Umeda, do porto de Kobe em 1934 ao oeste paulista, reconstruída a partir de documentos de cartório, do registro familiar japonês e da memória oral da família.">
+<meta property="og:type" content="book">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Eiji, não Eije">
+<meta property="og:description" content="Um homem. Um nome. Cinco grafias erradas. Sessenta anos para acertá-lo.">
+<meta property="og:url" content="https://identidadeancestral.github.io/livro/">
+<meta property="og:image" content="https://identidadeancestral.github.io/livro/share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* cores medidas no arquivo da capa */
+    --cream:#F2EAD3;
+    --cream-2:#EDDDCA;
+    --cream-3:#E6DAC0;
+    --sumi:#231F20;
+    --sumi-soft:#665C56;
+    --sumi-faint:#736657;
+    --beni:#992D36;
+    --beni-bright:#D2757C;
+
+    --serif:'EB Garamond', Garamond, Georgia, serif;
+    --mincho:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+    --measure:34rem;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--cream);color:var(--sumi);
+    font-family:var(--serif);font-size:1.18rem;line-height:1.68;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--beni);color:var(--cream);}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--beni);outline-offset:4px;}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .selo,.legenda-erradas,.titulo,.nome-kanji,.vida,.subtitulo,.acoes,.erradas li{
+      opacity:1!important;transform:none!important;animation:none!important;
+    }
+    .erradas li::after{transform:scaleX(1)!important;animation:none!important;}
+  }
+
+  .kana{font-family:var(--mincho);}
+  .lbl{
+    font-family:var(--serif);font-size:.78rem;font-weight:600;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--beni);
+  }
+
+  /* ---------- capa da página ---------- */
+  .hero{
+    position:relative;overflow:hidden;
+    min-height:100svh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+    padding:4rem 1.4rem 5rem;
+  }
+  .hero .marca-dagua{             /* o 梅 fantasma, como na capa */
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-46%);
+    font-family:var(--mincho);font-size:min(112vh,86vw);line-height:1;
+    color:var(--cream-2);z-index:0;user-select:none;pointer-events:none;
+  }
+  .hero > *{position:relative;z-index:1;}
+  .selo{font-family:var(--mincho);font-size:2.1rem;color:var(--beni);line-height:1;margin:0 0 1.9rem;}
+
+  /* as cinco grafias erradas — assinatura da página */
+  .erradas{
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:.35rem 1.15rem;margin:0 0 1.5rem;padding:0;list-style:none;
+    font-size:clamp(1.05rem,3.2vw,1.4rem);color:var(--sumi-faint);
+  }
+  .erradas li{position:relative;}
+  .erradas li::after{
+    content:"";position:absolute;left:0;right:0;bottom:-.16em;height:1px;
+    background:var(--beni);opacity:.45;transform:scaleX(0);transform-origin:left center;
+  }
+  .legenda-erradas{
+    font-style:italic;color:var(--sumi-soft);font-size:1rem;margin:0 0 2.4rem;
+  }
+  .titulo{
+    font-size:clamp(3.2rem,13vw,6.2rem);line-height:.98;font-weight:700;
+    letter-spacing:-.005em;margin:0;
+  }
+  .titulo .virg{color:var(--beni);}
+  .nome-kanji{
+    font-family:var(--mincho);font-weight:500;color:var(--beni);
+    font-size:clamp(1.5rem,5vw,2.1rem);margin:1.1rem 0 .35rem;letter-spacing:.08em;
+  }
+  .vida{font-size:1.02rem;color:var(--sumi-soft);letter-spacing:.06em;margin:0;}
+  .subtitulo{
+    font-style:italic;font-size:clamp(1.05rem,3.4vw,1.25rem);
+    color:var(--sumi);margin:1.9rem 0 0;
+  }
+  .acoes{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;margin-top:2.4rem;}
+  .btn{
+    display:inline-block;font-size:.98rem;font-weight:600;letter-spacing:.04em;
+    text-decoration:none;padding:.8rem 1.6rem;border:1px solid var(--sumi);
+    color:var(--sumi);transition:background .22s,color .22s,border-color .22s;
+  }
+  .btn:hover{background:var(--sumi);color:var(--cream);}
+  .btn.comprar{background:var(--beni);border-color:var(--beni);color:var(--cream);}
+  .btn.comprar:hover{background:var(--sumi);border-color:var(--sumi);}
+
+  /* animação de entrada: as grafias erradas chegam uma a uma */
+  @media (prefers-reduced-motion:no-preference){
+    .selo,.legenda-erradas,.titulo,.nome-kanji,.vida,.subtitulo,.acoes{opacity:0;}
+    .selo{animation:surge .7s .15s forwards;}
+    .erradas li{opacity:0;animation:surge .5s forwards;}
+    .erradas li:nth-child(1){animation-delay:.5s;}
+    .erradas li:nth-child(2){animation-delay:.69s;}
+    .erradas li:nth-child(3){animation-delay:.88s;}
+    .erradas li:nth-child(4){animation-delay:1.07s;}
+    .erradas li:nth-child(5){animation-delay:1.26s;}
+    .erradas li::after{animation:risca .45s forwards;}
+    .erradas li:nth-child(1)::after{animation-delay:.64s;}
+    .erradas li:nth-child(2)::after{animation-delay:.83s;}
+    .erradas li:nth-child(3)::after{animation-delay:1.02s;}
+    .erradas li:nth-child(4)::after{animation-delay:1.21s;}
+    .erradas li:nth-child(5)::after{animation-delay:1.4s;}
+    .legenda-erradas{animation:surge .6s 1.6s forwards;}
+    .titulo{animation:sobe .8s 1.85s forwards;}
+    .nome-kanji{animation:surge .7s 2.2s forwards;}
+    .vida{animation:surge .7s 2.35s forwards;}
+    .subtitulo{animation:surge .7s 2.5s forwards;}
+    .acoes{animation:surge .6s 2.6s forwards;}
+  }
+  @keyframes surge{to{opacity:1;}}
+  @keyframes sobe{from{opacity:0;transform:translateY(.22em);}to{opacity:1;transform:none;}}
+  @keyframes risca{to{transform:scaleX(1);}}
+
+  /* ---------- texto ---------- */
+  .col{max-width:var(--measure);margin:0 auto;padding:0 1.4rem;}
+  section{padding:4.5rem 0;}
+  .divisor{
+    font-family:var(--mincho);color:var(--beni);text-align:center;
+    font-size:1.35rem;line-height:1;margin:0 0 2.6rem;
+  }
+  .chamada{
+    font-size:clamp(1.35rem,4.4vw,1.7rem);font-weight:600;line-height:1.32;
+    text-align:center;margin:0 0 2.4rem;
+  }
+  p{margin:0 0 1.3rem;}
+  p.abre::first-letter{
+    font-weight:600;font-size:3.4rem;color:var(--beni);
+    float:left;line-height:.82;margin:.2rem .5rem 0 0;
+  }
+  .grafias{font-weight:600;color:var(--beni);}
+  .fecho{
+    text-align:center;font-size:clamp(1.2rem,4vw,1.5rem);font-weight:600;
+    line-height:1.4;margin:2.8rem 0 0;
+  }
+  .fecho span{display:block;font-style:italic;font-weight:500;color:var(--beni);margin-top:.3rem;}
+
+  /* ---------- o objeto ---------- */
+  .objeto{background:var(--cream-3);text-align:center;}
+  .objeto .col{max-width:32rem;}
+  .objeto h2{font-size:clamp(1.5rem,4.6vw,1.9rem);font-weight:600;line-height:1.24;margin:.7rem 0 1.1rem;}
+  .objeto p{font-size:1.08rem;}
+  .objeto .acoes{margin-top:1.8rem;}
+  .ficha{
+    display:inline-block;text-align:left;
+    font-size:.92rem;color:var(--sumi-soft);line-height:1.9;letter-spacing:.02em;
+    margin:2.2rem 0 0;padding-top:1.3rem;border-top:1px solid rgba(35,31,32,.18);
+  }
+  .ficha b{font-weight:600;color:var(--sumi);}
+
+  /* ---------- do livro veio a lei ---------- */
+  .lei{background:var(--sumi);color:var(--cream);}
+  .lei .col{padding-top:0;padding-bottom:0;}
+  .lei .lbl{color:var(--beni-bright);}
+  .lei h2{font-size:clamp(1.6rem,5vw,2.1rem);font-weight:600;line-height:1.24;margin:.9rem 0 1.3rem;}
+  .lei p{color:#E4DAC6;}
+  .lei .btn{border-color:rgba(242,234,211,.5);color:var(--cream);}
+  .lei .btn:hover{background:var(--beni);border-color:var(--beni);}
+
+  footer{
+    text-align:center;padding:2.6rem 1.4rem;background:var(--cream-2);
+    font-size:.95rem;color:var(--sumi-soft);line-height:1.9;
+  }
+  .contagem{
+    margin:0 auto 1.8rem;padding-bottom:1.6rem;max-width:20rem;
+    border-bottom:1px solid rgba(35,31,32,.14);line-height:1.25;
+  }
+  .contagem .num{
+    display:block;font-size:2.1rem;font-weight:600;color:var(--beni);
+    letter-spacing:.01em;font-variant-numeric:lining-nums;
+  }
+  .contagem .rot{
+    display:block;margin-top:.45rem;font-size:.72rem;font-weight:500;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--sumi-soft);
+  }
+  footer a{color:var(--beni);}
+  footer .kana{color:var(--beni);font-size:1.2rem;display:block;margin-bottom:.5rem;}
+
+  @media (max-width:680px){
+    body{font-size:1.12rem;}
+    .erradas{gap:.3rem .8rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= CAPA ================= -->
+<header class="hero">
+  <div class="marca-dagua" aria-hidden="true">梅</div>
+
+  <p class="selo kana" aria-hidden="true">梅</p>
+
+  <ul class="erradas" aria-label="As cinco grafias erradas registradas no Brasil">
+    <li>Eije</li><li>Eigi</li><li>Edige</li><li>Eudgi</li><li>Endgi</li>
+  </ul>
+  <p class="legenda-erradas">Um homem dividido em nomes.</p>
+
+  <h1 class="titulo">Eiji<span class="virg">,</span><br>não Eije</h1>
+  <p class="nome-kanji kana">梅田 英治</p>
+  <p class="vida">Umeda Eiji · 1905 — 1962</p>
+  <p class="subtitulo">memórias de uma família imigrante</p>
+
+  <div class="acoes">
+    <a class="btn comprar" href="https://www.amazon.com.br/dp/6502253954" rel="noopener">Comprar na Amazon</a>
+  </div>
+</header>
+
+<!-- ================= A HISTÓRIA ================= -->
+<main>
+<section id="historia">
+  <div class="col">
+    <p class="divisor kana" aria-hidden="true">梅</p>
+
+    <p class="chamada">Um homem. Um nome. Cinco grafias erradas.<br>Sessenta anos para acertá-lo.</p>
+
+    <p class="abre">O papel veio do Japão. Dois kanji — <span class="kana">英治</span> — pararam Wagner Toshiro Umeda: era o nome verdadeiro do avô. Nos papéis brasileiros, esse nome aparecia de cinco maneiras erradas: <span class="grafias">Eije. Eigi. Edige. Eudgi. Endgi.</span> Um homem dividido em nomes.</p>
+
+    <p>Em 1934, um lavrador de vinte e oito anos embarcou em Kobe rumo ao Brasil. No mesmo navio cruzava meio mundo uma jovem de vinte anos, Some Endo. Eles se reencontrariam no oeste paulista, uniriam suas vidas, teriam sete filhos. Ele morreria em 1962. Ela viveria mais quarenta e dois anos viúva, acendendo incenso todas as manhãs diante de um altar, num quarto pequeno em São Paulo — chamando, em silêncio, o nome certo do marido.</p>
+
+    <p>A partir de documentos de cartório, do registro familiar japonês e da memória oral da família, este livro reconstrói a travessia de Eiji e Some Umeda — e, com ela, a história silenciosa de um país que recebeu milhões de imigrantes e nem sempre soube escrever seus nomes.</p>
+
+    <p class="fecho">O Brasil errou o nome. A memória corrigiu.<span>Eiji. Não Eije.</span></p>
+  </div>
+</section>
+
+<!-- ================= O OBJETO ================= -->
+<section class="objeto">
+  <div class="col">
+    <p class="divisor kana" aria-hidden="true">梅</p>
+    <p class="lbl">O livro</p>
+    <h2>Uma travessia reconstruída documento por documento.</h2>
+    <p>Edição em capa dura, feita para durar o tempo que um registro de família precisa durar.</p>
+    <div class="acoes">
+      <a class="btn comprar" href="https://www.amazon.com.br/dp/6502253954" rel="noopener">Comprar na Amazon</a>
+    </div>
+    <p class="ficha">
+      <b>Autor</b> Wagner Toshiro Umeda<br>
+      <b>Subtítulo</b> memórias de uma família imigrante<br>
+      <b>Edição</b> do autor · São Paulo · 2026
+    </p>
+  </div>
+</section>
+</main>
+
+<!-- ================= DO LIVRO VEIO A LEI ================= -->
+<section class="lei">
+  <div class="col" style="padding-top:0;padding-bottom:0">
+    <p class="lbl">Do livro veio a lei</p>
+    <h2>O que uma família levou sessenta anos para corrigir, o país inteiro ainda espera.</h2>
+    <p>A pesquisa que originou este livro terminou em outro documento: o anteprojeto da <strong>Lei da Identidade Ancestral</strong> — que cria o direito de qualquer descendente obter, no cartório e sem processo judicial, o reconhecimento da correspondência entre a grafia brasileira e a grafia ancestral do nome de seu antepassado imigrante. Sem apagar registro algum.</p>
+    <p>O texto está pronto, tem autoria registrada em blockchain e é oferecido gratuitamente ao Congresso Nacional. Não se trata de um sobrenome: trata-se de todos os que foram alterados na chegada.</p>
+    <div class="acoes" style="justify-content:flex-start;margin-top:1.9rem">
+      <a class="btn" href="https://identidadeancestral.github.io/" rel="noopener">Ler o manifesto e a minuta →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p class="contagem" id="contagem" hidden>
+    <span class="num" id="visitas"></span>
+    <span class="rot">visitas a esta página</span>
+  </p>
+  <span class="kana" aria-hidden="true">梅</span>
+  Wagner Toshiro Umeda · São Paulo · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a><br>
+  <a href="https://identidadeancestral.github.io/">Lei da Identidade Ancestral</a>
+</footer>
+
+<script>
+/* Contador de visitas — CountAPI (sem cadastro). A chave é pública;
+   se o serviço não responder, o bloco simplesmente não aparece:
+   melhor nenhum número do que um número inventado. */
+(function(){
+  var CHAVE="eiji_nao_eije_livro_umeda_2026";
+  var base="https://countapi.mileshilliard.com/api/v1/";
+  var jaVisto=false;
+  try{ jaVisto = sessionStorage.getItem("visita_contada")==="1"; }catch(e){}
+  var url = base + (jaVisto ? "get/" : "hit/") + CHAVE;
+  fetch(url)
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+    .then(function(d){
+      var n = Number(d && d.value);
+      if(!isFinite(n) || n <= 0) return;
+      try{ sessionStorage.setItem("visita_contada","1"); }catch(e){}
+      document.getElementById("visitas").textContent = n.toLocaleString("pt-BR");
+      document.getElementById("contagem").hidden = false;
+    })
+    .catch(function(){});
+})();
+</script>
+</body>
+</html>
