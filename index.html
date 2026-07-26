@@ -294,11 +294,31 @@
 
   /* ---------- RODAPÉ ---------- */
   footer{
-    padding:2.2rem 1.4rem 2.6rem;text-align:center;
+    padding:2.4rem 1.4rem 2.8rem;text-align:center;
     font-family:var(--ui);font-size:.8rem;color:var(--ink-soft);
-    background:var(--paper-2);
+    background:var(--paper-2);line-height:1.7;
   }
   footer a{color:var(--seal);}
+  footer p{margin:0;}
+  .contagem{
+    margin:0 auto 1.5rem;padding-bottom:1.4rem;max-width:18rem;
+    border-bottom:1px solid rgba(27,42,74,.16);line-height:1.2;
+  }
+  .contagem .num{
+    display:block;font-family:var(--display);font-size:1.95rem;font-weight:600;
+    color:var(--seal);letter-spacing:.01em;
+  }
+  .contagem .rot{
+    display:block;margin-top:.4rem;font-size:.67rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .livro{margin-top:1rem!important;}
+  .livro a{
+    font-weight:600;text-decoration:none;
+    border-bottom:1px solid rgba(181,64,47,.4);padding-bottom:1px;
+  }
+  .livro a:hover{border-bottom-color:var(--seal);}
+  .livro cite{font-style:italic;}
 
   /* ---------- FORMULÁRIO (Brevo) E E-CIDADANIA ---------- */
   .apoio h2{margin-bottom:.9rem;}
@@ -480,6 +500,7 @@
         <!-- Campos exigidos pelo Brevo: anti-robô (deixe vazio) e idioma -->
         <input type="text" name="email_address_check" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input type="hidden" name="locale" value="pt">
+        <input type="hidden" name="html_type" value="simple">
       </form>
 
       <div class="ecidadania">
@@ -501,7 +522,12 @@
 </section>
 
 <footer>
-  Iniciativa cidadã, sem vínculo partidário · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a>
+  <p class="contagem" id="contagem" hidden>
+    <span class="num" id="visitas"></span>
+    <span class="rot">visitas a esta página</span>
+  </p>
+  <p>Iniciativa cidadã, sem vínculo partidário · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a></p>
+  <p class="livro">A história que deu origem a esta proposta está contada em <a href="https://identidadeancestral.github.io/livro/"><cite>Eiji, não Eije</cite> →</a></p>
 </footer>
 
 <script>
@@ -560,6 +586,24 @@ document.querySelectorAll("button[data-copiar],button[data-texto]").forEach(func
       url:"https://identidadeancestral.github.io/"
     }).catch(function(){ window.open(a.href,"_blank","noopener"); });
   });
+})();
+/* ---- contador de visitas (CountAPI). Sem resposta do serviço, o bloco não aparece:
+       melhor rodapé sem número do que número inventado. ---- */
+(function(){
+  var CHAVE="lei_identidade_ancestral_site_2026";
+  var base="https://countapi.mileshilliard.com/api/v1/";
+  var visto=false;
+  try{ visto = sessionStorage.getItem("visita_contada_lei")==="1"; }catch(e){}
+  fetch(base + (visto ? "get/" : "hit/") + CHAVE)
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+    .then(function(d){
+      var n = Number(d && d.value);
+      if(!isFinite(n) || n <= 0) return;
+      try{ sessionStorage.setItem("visita_contada_lei","1"); }catch(e){}
+      document.getElementById("visitas").textContent = n.toLocaleString("pt-BR");
+      document.getElementById("contagem").hidden = false;
+    })
+    .catch(function(){});
 })();
 </script>
 </body>
