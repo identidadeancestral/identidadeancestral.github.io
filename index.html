@@ -4,24 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lei da Identidade Ancestral — Manifesto</title>
-<meta name="description" content="Pela devolução dos nomes que o Brasil alterou no caminho. Manifesto pela Lei da Identidade Ancestral — uma iniciativa cidadã para corrigir, sem processo judicial, a grafia de nomes de imigrantes históricos e seus descendentes.">
-
-<!-- Compartilhamento (WhatsApp, X, Facebook) -->
-<meta property="og:type" content="website">
-<meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="Manifesto pela Identidade Ancestral">
+<meta name="description" content="Pela devolução dos nomes que o Brasil alterou no caminho. Manifesto pela Lei da Identidade Ancestral — uma iniciativa cidadã para reconhecer, sem processo judicial e sem apagar registro algum, a grafia ancestral dos nomes de imigrantes e de seus descendentes.">
+<meta property="og:title" content="Lei da Identidade Ancestral — Manifesto">
 <meta property="og:description" content="Pela devolução dos nomes que o Brasil alterou no caminho.">
-<!-- Endereço do site (já preenchido). Se um dia usar domínio próprio, troque nas duas linhas abaixo. -->
+<meta property="og:type" content="website">
 <meta property="og:url" content="https://identidadeancestral.github.io/">
-<meta property="og:image" content="https://identidadeancestral.github.io/capa.jpg">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:image" content="https://identidadeancestral.github.io/capa.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,0..100,0..1;1,9..144,400..600,0..100,0..1&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#ECEBE3;
@@ -43,18 +38,21 @@
   }
 
   *{box-sizing:border-box;}
-  html{-webkit-text-size-adjust:100%;}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;}
   body{
     margin:0;
     background:var(--paper);
+    background-image:radial-gradient(120% 80% at 50% 0%, #F2F1EA 0%, var(--paper) 62%);
     color:var(--ink);
     font-family:var(--body);
     font-size:1.0625rem;
-    line-height:1.7;
+    line-height:1.72;
     -webkit-font-smoothing:antialiased;
   }
   ::selection{background:var(--seal);color:var(--on-dark);}
   a{color:inherit;}
+  :focus-visible{outline:2px solid var(--seal);outline-offset:3px;border-radius:2px;}
+  h1,h2,h3{font-family:var(--display);font-variation-settings:'SOFT' 12,'WONK' 1;}
 
   /* ---------- HERO ---------- */
   .hero{
@@ -62,7 +60,7 @@
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
     text-align:center;
-    padding:3rem 1.4rem 4rem;
+    padding:3.5rem 1.4rem 4.5rem;
     position:relative;
   }
   .eyebrow{
@@ -72,202 +70,241 @@
     text-transform:uppercase;
     color:var(--seal);
     font-weight:600;
-    margin:0 0 2.4rem;
+    margin:0 0 2.6rem;
   }
-  /* the name correction — the page's signature */
+
+  /* the correction — the page's signature */
   .correction{
     font-family:var(--display);
     line-height:1;
-    margin-bottom:2.6rem;
+    margin-bottom:2.4rem;
+    min-height:12.5rem;
   }
   .correction .wrong{
     display:inline-block;
     position:relative;
-    font-size:clamp(2.6rem,12vw,4.2rem);
+    font-size:clamp(2.3rem,10vw,3.6rem);
     font-weight:400;
     color:var(--ink-faint);
+    letter-spacing:.02em;
+    font-variation-settings:'SOFT' 20,'WONK' 0;
   }
-  .correction .wrong::after{
+  .correction .wrong::after{           /* a averbação: liga, não cancela */
     content:"";
-    position:absolute;left:-4%;right:-4%;top:54%;
-    height:2px;background:var(--seal);
-    transform:scaleX(1);transform-origin:left center;
+    position:absolute;left:-3%;right:-3%;bottom:-.16em;
+    height:2px;background:var(--seal);opacity:.55;
+    transform-origin:left center;
   }
   .correction .arrow{
     display:block;
     font-family:var(--ui);
-    font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+    font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
     color:var(--ink-faint);
-    margin:.85rem 0 .55rem;
+    margin:1.15rem 0 .7rem;
   }
   .correction .right{
     display:inline-block;
     position:relative;
-    font-size:clamp(3.4rem,17vw,6rem);
+    font-size:clamp(3rem,15vw,5.4rem);
     font-weight:600;
     color:var(--ink);
-    padding-bottom:.12em;
+    letter-spacing:.01em;
+    padding-bottom:.14em;
+    font-variation-settings:'SOFT' 8,'WONK' 1;
   }
   .correction .d{color:var(--seal);}
   .correction .right::after{
     content:"";
     position:absolute;left:0;right:0;bottom:0;
     height:3px;background:var(--seal);
-    transform:scaleX(1);transform-origin:left center;
+    transform-origin:left center;
+  }
+  .correction.longo .wrong{font-size:clamp(1.8rem,7.2vw,2.9rem);}
+  .correction.longo .right{font-size:clamp(2.1rem,10vw,4.2rem);}
+  .correction .origem{
+    display:block;
+    font-family:var(--ui);
+    font-size:.78rem;letter-spacing:.04em;
+    color:var(--ink-soft);
+    margin-top:1.15rem;
+    font-weight:400;
   }
   .hero h1{
     font-family:var(--display);
     font-weight:500;
-    font-size:clamp(1.5rem,5.5vw,2.1rem);
-    line-height:1.15;
-    margin:0 0 .7rem;
-    max-width:20ch;
+    font-size:clamp(1.45rem,5.2vw,2.05rem);
+    line-height:1.18;
+    margin:0 0 .8rem;
+    max-width:22ch;
   }
   .hero .lede{
     font-style:italic;
     color:var(--ink-soft);
-    max-width:30ch;
+    max-width:32ch;
     margin:0 auto;
     font-size:1.06rem;
   }
   .scrollcue{
     position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);
     font-family:var(--ui);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--ink-faint);
+    color:var(--ink-faint);text-decoration:none;
   }
   .scrollcue span{display:block;font-size:1rem;margin-top:.2rem;}
 
-  /* reveal only when motion is welcome; content visible by default otherwise */
   @media (prefers-reduced-motion: no-preference){
     .eyebrow{opacity:0;animation:fade .8s .1s forwards;}
     .correction .wrong{opacity:0;animation:fade .7s .5s forwards;}
-    .correction .wrong::after{animation:strike .5s 1.25s both;}
-    .correction .arrow{opacity:0;animation:fade .6s 1.7s forwards;}
-    .correction .right{opacity:0;transform:translateY(.3em);animation:rise .8s 2.0s forwards;}
-    .correction .right::after{animation:strike .6s 2.7s both;}
-    .hero h1{opacity:0;animation:fade .9s 2.8s forwards;}
-    .hero .lede{opacity:0;animation:fade .9s 3.1s forwards;}
-    .scrollcue{opacity:0;animation:fade 1s 3.6s forwards;}
+    .correction .wrong::after{animation:risca .5s 1.2s both;}
+    .correction .arrow{opacity:0;animation:fade .6s 1.65s forwards;}
+    .correction .right{opacity:0;transform:translateY(.28em);animation:sobe .8s 1.95s forwards;}
+    .correction .right::after{animation:risca .6s 2.6s both;}
+    .correction .origem{opacity:0;animation:fade .7s 3.0s forwards;}
+    .hero h1{opacity:0;animation:fade .9s 2.75s forwards;}
+    .hero .lede{opacity:0;animation:fade .9s 3.05s forwards;}
+    .scrollcue{opacity:0;animation:fade 1s 3.5s forwards;}
+    /* trocas seguintes do ciclo: mais curtas que a entrada */
+    .correction.ciclo .wrong{animation:fade .5s both;}
+    .correction.ciclo .wrong::after{animation:risca .4s .35s both;}
+    .correction.ciclo .arrow{animation:fade .4s .2s both;}
+    .correction.ciclo .right{animation:sobe .55s .5s both;}
+    .correction.ciclo .right::after{animation:risca .45s 1s both;}
+    .correction.ciclo .origem{animation:fade .5s 1.25s both;}
   }
   @keyframes fade{to{opacity:1;}}
-  @keyframes rise{to{opacity:1;transform:none;}}
-  @keyframes strike{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  @keyframes sobe{to{opacity:1;transform:none;}}
+  @keyframes risca{from{transform:scaleX(0);}to{transform:scaleX(1);}}
 
   /* ---------- MANIFESTO ---------- */
   .manifesto{
     max-width:var(--measure);
     margin:0 auto;
-    padding:1rem 1.4rem 4.5rem;
+    padding:1.5rem 1.4rem 4.5rem;
   }
   .rule{
     width:42px;height:2px;background:var(--seal);
     border:0;margin:0 auto 3rem;
   }
-  .manifesto p{margin:0 0 1.35rem;}
-  .manifesto p.first{font-size:1.18rem;line-height:1.6;}
-  .manifesto .law{
+  .manifesto p{margin:0 0 1.4rem;}
+  .manifesto p.first{font-size:1.2rem;line-height:1.62;}
+  .manifesto p.first::first-letter{
+    font-family:var(--display);font-weight:600;font-size:3.1rem;
+    float:left;line-height:.86;margin:.18rem .55rem 0 0;color:var(--seal);
+  }
+  .manifesto strong{font-weight:600;color:var(--ink);}
+  .manifesto em{color:var(--ink);}
+  .law{
     font-family:var(--display);
     font-weight:600;
-    font-size:1.3rem;
-    color:var(--ink);
+    font-size:1.32rem;
+    line-height:1.35;
     text-align:center;
-    margin:2.4rem 0;
+    margin:2.6rem 0;
   }
-  .manifesto em{color:var(--ink);}
-  .manifesto strong{font-weight:500;color:var(--ink);}
+
+  /* o que a lei institui — dentro da mesma coluna */
+  .institui{margin:2.6rem 0 2.2rem;padding:0;list-style:none;}
+  .institui li{
+    padding:1rem 0;
+    border-top:1px solid rgba(27,42,74,.14);
+  }
+  .institui li:last-child{border-bottom:1px solid rgba(27,42,74,.14);}
+  .institui b{
+    font-family:var(--display);font-weight:600;font-size:1.05rem;
+    display:block;margin-bottom:.15rem;
+  }
+  .institui span{font-size:.98rem;color:var(--ink-soft);}
+  .institui .rem{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.02em;
+    color:var(--seal);display:block;margin-top:.35rem;
+  }
+
   .cry{
     font-family:var(--display);
     font-size:clamp(1.5rem,6vw,2rem);
-    line-height:1.25;
+    line-height:1.3;
     text-align:center;
-    color:var(--ink);
-    margin:3rem 0 2.4rem;
+    margin:3.2rem 0 2.4rem;
     font-weight:500;
   }
   .cry b{color:var(--seal);font-weight:600;}
-  .sign{text-align:center;font-family:var(--ui);margin-top:2.5rem;}
-  .sign .name{font-family:var(--display);font-weight:600;font-size:1.12rem;color:var(--ink);}
-  .sign .meta{font-size:.86rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.5;}
-  .sign .meta em{font-style:italic;}
+  .sign{text-align:center;font-family:var(--ui);margin-top:2.6rem;}
+  .sign .name{font-family:var(--display);font-weight:600;font-size:1.1rem;}
+  .sign .meta{font-size:.86rem;color:var(--ink-soft);margin-top:.3rem;line-height:1.55;}
 
-  /* ---------- RECORD (dark zone): seal + support ---------- */
+  /* ---------- RECORD (zona escura) ---------- */
   .record{
     background:var(--ink);
     color:var(--on-dark);
-    padding:4rem 1.4rem 4.5rem;
+    padding:4.2rem 1.4rem 4rem;
   }
   .record .inner{max-width:var(--measure);margin:0 auto;}
-
-  .seal{
+  .record h2{
+    font-family:var(--display);font-weight:600;
+    font-size:1.42rem;line-height:1.25;margin:0 0 .9rem;
+  }
+  .record p{color:var(--on-dark);font-size:.99rem;line-height:1.68;}
+  .record .label{
+    font-family:var(--ui);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--seal-bright);font-weight:600;margin:0 0 .8rem;
+  }
+  .bloco{
     border:1px solid rgba(239,237,228,.22);
     border-radius:3px;
-    padding:1.5rem 1.4rem;
-    margin-bottom:3.5rem;
+    padding:1.6rem 1.4rem;
+    margin-bottom:3.2rem;
   }
-  .seal .label{
-    font-family:var(--ui);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--seal-bright);font-weight:600;margin:0 0 .7rem;
+  .bloco:last-of-type{margin-bottom:0;}
+  .hashlabel{
+    font-family:var(--ui);font-size:.7rem;letter-spacing:.04em;
+    color:var(--on-dark-soft);margin:1.2rem 0 0;
   }
-  .seal p.desc{margin:0 0 1.2rem;font-size:.97rem;color:var(--on-dark);line-height:1.6;}
-  .seal dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.35rem 1rem;font-family:var(--ui);font-size:.8rem;}
-  .seal dt{color:var(--on-dark-soft);}
-  .seal dd{margin:0;color:var(--on-dark);}
-  .seal .hash{
-    font-family:var(--mono);font-size:.74rem;line-height:1.5;
-    word-break:break-all;color:var(--on-dark);
-    margin:.5rem 0 1.4rem;
+  .hash{
+    font-family:var(--mono);font-size:.74rem;line-height:1.55;
+    word-break:break-all;
+    margin:.5rem 0 .8rem;
     padding:.7rem .8rem;background:rgba(0,0,0,.18);border-radius:3px;
   }
-  .seal .hashlabel{
-    font-family:var(--ui);font-size:.7rem;letter-spacing:.04em;
-    color:var(--on-dark-soft);margin:0;
+  .como{font-family:var(--mono);font-size:.72rem;color:var(--on-dark-soft);line-height:1.7;word-break:break-word;}
+  .acoes{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.3rem;}
+  .pill{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-family:var(--ui);font-size:.85rem;font-weight:600;
+    text-decoration:none;color:var(--on-dark);
+    border:1px solid var(--seal-bright);
+    padding:.7rem 1.2rem;border-radius:999px;
+    background:transparent;cursor:pointer;
+    transition:background .18s ease,color .18s ease;
   }
-  .nets{display:grid;gap:0;}
+  .pill:hover{background:var(--seal-bright);color:var(--ink);}
+  .pill.cheia{background:var(--seal);border-color:var(--seal);}
+  .pill.cheia:hover{background:var(--seal-bright);color:var(--ink);}
+  .nets{display:grid;gap:0;margin-top:1.4rem;}
   .net{
     padding:1.1rem 0;
     border-top:1px solid rgba(239,237,228,.16);
     display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;
   }
-  .net:last-child{padding-bottom:.2rem;}
   .net .who{flex:1 1 9rem;min-width:0;}
   .net .net-name{
-    font-family:var(--ui);font-size:.9rem;font-weight:600;color:var(--on-dark);
+    font-family:var(--ui);font-size:.9rem;font-weight:600;
     display:flex;align-items:center;gap:.5rem;
   }
   .net .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--seal-bright);flex:none;}
   .net .when{font-family:var(--mono);font-size:.74rem;color:var(--on-dark-soft);margin-top:.25rem;}
-  .verify{
-    display:inline-flex;align-items:center;gap:.5rem;
-    font-family:var(--ui);font-size:.85rem;font-weight:600;letter-spacing:.02em;
-    text-decoration:none;color:var(--on-dark);
-    border:1px solid var(--seal-bright);
-    padding:.7rem 1.2rem;border-radius:999px;
-    transition:background .2s,color .2s;
-  }
-  .verify:hover,.verify:focus-visible{background:var(--seal-bright);color:var(--ink);}
-  .verify.sm{font-size:.78rem;padding:.55rem 1rem;}
-  .verify.pending{
-    border-color:rgba(239,237,228,.28);color:var(--on-dark-soft);
-    cursor:default;pointer-events:none;
-  }
-  .docdl{margin-top:1.6rem;padding-top:1.5rem;border-top:1px solid rgba(239,237,228,.16);}
-  .doclink{
-    display:inline-block;font-family:var(--ui);font-size:.9rem;font-weight:600;
-    text-decoration:none;color:var(--on-dark);
-    border-bottom:1px solid var(--seal-bright);padding-bottom:2px;
-  }
-  .doclink:hover,.doclink:focus-visible{color:var(--seal-bright);}
-  .docnote{font-family:var(--ui);font-size:.78rem;color:var(--on-dark-soft);margin:.7rem 0 0;line-height:1.55;}
 
-  .support h2{
-    font-family:var(--display);font-weight:500;
-    font-size:clamp(1.6rem,6vw,2.2rem);line-height:1.2;
-    margin:0 0 1rem;color:var(--on-dark);
+  /* ---------- RODAPÉ ---------- */
+  footer{
+    padding:2.2rem 1.4rem 2.6rem;text-align:center;
+    font-family:var(--ui);font-size:.8rem;color:var(--ink-soft);
+    background:var(--paper-2);
   }
-  .support p.intro{font-size:1.02rem;color:var(--on-dark);margin:0 0 2rem;max-width:34ch;}
-  .support p.intro b{color:var(--seal-bright);font-weight:500;}
+  footer a{color:var(--seal);}
 
-  form.signup{margin:0 0 1.4rem;}
+  /* ---------- FORMULÁRIO (Brevo) E E-CIDADANIA ---------- */
+  .apoio h2{margin-bottom:.9rem;}
+  .apoio p.intro{font-size:1.02rem;margin:0 0 1.9rem;max-width:34ch;}
+  .apoio p.intro b{color:var(--seal-bright);font-weight:600;}
+  form.signup{margin:0;}
   form.signup label{
     display:block;font-family:var(--ui);font-size:.78rem;letter-spacing:.04em;
     color:var(--on-dark-soft);margin-bottom:.55rem;
@@ -281,19 +318,15 @@
     background:rgba(239,237,228,.06);color:var(--on-dark);
   }
   form.signup input[type=email]::placeholder{color:var(--on-dark-soft);}
-  form.signup input[type=email]:focus-visible{outline:2px solid var(--seal-bright);outline-offset:1px;}
   .btn-primary{
     font-family:var(--ui);font-size:.95rem;font-weight:600;
     padding:.85rem 1.5rem;border:0;border-radius:6px;cursor:pointer;
     background:var(--seal);color:#FBF7EF;
-    transition:background .2s;
+    transition:background .2s,color .2s;
   }
   .btn-primary:hover,.btn-primary:focus-visible{background:var(--seal-bright);color:var(--ink);}
   .consent{font-family:var(--ui);font-size:.74rem;color:var(--on-dark-soft);margin:.7rem 0 0;line-height:1.5;}
-
-  .ecidadania{
-    margin-top:2.4rem;padding-top:2rem;border-top:1px solid rgba(239,237,228,.16);
-  }
+  .ecidadania{margin-top:2.3rem;padding-top:1.9rem;border-top:1px solid rgba(239,237,228,.16);}
   .btn-ghost{
     display:inline-block;font-family:var(--ui);font-size:.95rem;font-weight:600;
     text-decoration:none;color:var(--on-dark);
@@ -303,141 +336,231 @@
   }
   .btn-ghost:hover,.btn-ghost:focus-visible{border-color:var(--seal-bright);background:rgba(219,114,100,.1);}
   .ecidadania .note{font-family:var(--ui);font-size:.78rem;color:var(--on-dark-soft);margin:.8rem 0 0;line-height:1.5;}
-
-  /* ---------- FOOTER ---------- */
-  footer{
-    background:#16223C;color:var(--on-dark-soft);
-    font-family:var(--ui);font-size:.8rem;line-height:1.7;
-    text-align:center;padding:2.4rem 1.4rem;
+  .divulgue{margin-top:2.3rem;padding-top:1.9rem;border-top:1px solid rgba(239,237,228,.16);}
+  .divulgue p{font-size:.95rem;color:var(--on-dark-soft);margin:0;}
+  .divulgue .acoes{margin-top:1.2rem;align-items:center;}
+  .btn-share{
+    display:inline-block;font-family:var(--ui);font-size:.95rem;font-weight:600;
+    text-decoration:none;color:#FBF7EF;background:var(--seal);
+    padding:.85rem 1.5rem;border-radius:6px;
+    transition:background .2s,color .2s;
   }
-  footer .org{color:var(--on-dark);}
-  footer a{color:var(--on-dark);text-decoration:none;border-bottom:1px solid rgba(239,237,228,.3);}
+  .btn-share:hover,.btn-share:focus-visible{background:var(--seal-bright);color:var(--ink);}
+  .btn-copiar{
+    font-family:var(--ui);font-size:.9rem;font-weight:600;cursor:pointer;
+    color:var(--on-dark);background:transparent;
+    border:1px solid rgba(239,237,228,.4);border-radius:6px;padding:.85rem 1.3rem;
+    transition:border-color .2s,background .2s;
+  }
+  .btn-copiar:hover,.btn-copiar:focus-visible{border-color:var(--seal-bright);background:rgba(219,114,100,.1);}
 
-  :focus-visible{outline:2px solid var(--seal);outline-offset:2px;}
-  @media (max-width:480px){
-    .seal dl{grid-template-columns:1fr;gap:.1rem .5rem;}
-    .seal dt{margin-top:.5rem;}
+  @media (max-width:520px){
+    .correction{min-height:13rem;}
+    .manifesto p.first::first-letter{font-size:2.7rem;}
   }
 </style>
 </head>
 <body>
 
-  <header class="hero">
-    <p class="eyebrow">Lei da Identidade Ancestral</p>
-    <div class="correction" aria-label="Eije, corrigido para Eiji">
-      <span class="wrong">Eij<span class="d">e</span></span>
-      <span class="arrow">corrigido para</span>
-      <span class="right">Eij<span class="d">i</span></span>
+<!-- ================= HERÓI ================= -->
+<header class="hero">
+  <p class="eyebrow">Iniciativa cidadã · Anteprojeto de lei</p>
+
+  <div class="correction" id="correcao" aria-live="off">
+    <span class="wrong" id="c-wrong">MULLER</span>
+    <span class="arrow">averbação de continuidade</span>
+    <span class="right" id="c-right">M<span class="d">Ü</span>LLER</span>
+    <span class="origem" id="c-origem">alemão — o trema que o balcão não tinha</span>
+  </div>
+
+  <h1>Pela devolução dos nomes que o Brasil alterou no caminho.</h1>
+  <p class="lede">Uma lei para reconhecer a grafia ancestral sem apagar registro algum.</p>
+
+  <a class="scrollcue" href="#manifesto">leia<span aria-hidden="true">↓</span></a>
+</header>
+
+<!-- ================= MANIFESTO ================= -->
+<main class="manifesto" id="manifesto">
+  <hr class="rule">
+
+  <p class="first">Entre 1850 e 1988, o Brasil recebeu milhões de imigrantes — japoneses, italianos, alemães, árabes, judeus, poloneses, ucranianos, armênios, gregos, coreanos, chineses e tantos outros. Nos balcões de registro, seus nomes foram escritos de ouvido, no tempo curto de uma fila, por quem não conhecia aqueles alfabetos.</p>
+
+  <p>Assim, irmãos saíram do cartório com sobrenomes diferentes. Acentos e diacríticos sumiram. Nomes foram traduzidos, abreviados, recriados. Não houve maldade: houve pressa e desconhecimento. Mas o efeito durou gerações — famílias separadas dos próprios arquivos de origem por causa de uma letra.</p>
+
+  <p>Quando se perde o nome, perde-se mais do que uma palavra. Perde-se a chave de um arquivo, a linha que liga uma pessoa ao seu bisavô, o documento que comprova de onde se veio. Perde-se o direito de provar quem se é.</p>
+
+  <p class="law">Por isso existe a Lei da Identidade Ancestral.</p>
+
+  <p>É um anteprojeto que cria um direito simples e até hoje inexistente: o de qualquer descendente obter, <strong>diretamente no cartório e sem processo judicial</strong>, o reconhecimento da correspondência entre a grafia brasileira e a grafia ancestral do nome de seu antepassado imigrante — inclusive de quem já morreu —, a partir dos documentos do país de origem.</p>
+
+  <p>A regra de desenho é uma só: <strong>nada se apaga</strong>. A grafia ancestral entra por averbação, ao lado da que está registrada, e as duas passam a valer como o mesmo nome. Ninguém é obrigado a mudar o nome que usa. Nenhuma grafia histórica é riscada. A memória do registro permanece inteira — o que muda é que ela volta a fazer sentido.</p>
+
+  <ul class="institui">
+    <li><b>Continuidade, não substituição</b><span>A grafia ancestral é averbada ao lado da registrada; o assento original permanece íntegro e legível.</span><span class="rem">arts. 4º e 9º</span></li>
+    <li><b>Prova que a família reaproveita</b><span>Documentos, apostilas e traduções validados uma vez servem aos demais descendentes, que não pagam nem provam tudo de novo.</span><span class="rem">art. 11</span></li>
+    <li><b>Certidão de Continuidade Nominal e Linhagem Ancestral</b><span>Um documento único que reconstitui a cadeia entre o descendente e o imigrante, com verificação eletrônica de autenticidade.</span><span class="rem">art. 13</span></li>
+    <li><b>Resgate de sobrenomes suprimidos</b><span>Caminho próprio para os sobrenomes que nunca chegaram ao registro brasileiro — como os das mulheres apagadas dos assentos.</span><span class="rem">art. 15</span></li>
+    <li><b>Nenhum banco público de genealogias</b><span>A interoperabilidade serve ao procedimento, não à mineração de vínculos familiares: acesso restrito e trilha de auditoria.</span><span class="rem">art. 12</span></li>
+    <li><b>Gratuidade no núcleo da reparação</b><span>Protocolo, reaproveitamento da prova e a primeira averbação são gratuitos, no modelo de compensação já validado pelo Supremo.</span><span class="rem">art. 18</span></li>
+  </ul>
+
+  <p>E a lei olha para a frente: determina que o nome de quem chega hoje seja reproduzido fielmente, como está no documento de origem, para que a injustiça não se repita amanhã.</p>
+
+  <p>Esta é uma iniciativa cidadã, sem vínculo partidário, sem candidatura e sem fins de lucro. O anteprojeto está pronto — texto normativo, justificação e estimativa de impacto — e é <strong>oferecido gratuitamente ao Congresso Nacional</strong>, a qualquer parlamentar, de qualquer partido, que tenha a coragem moral de adotá-lo.</p>
+
+  <p>A quem lê este manifesto: se você também carrega um nome que foi alterado no caminho, esta causa é sua. Se é parlamentar, o texto está à sua disposição. Se é jornalista, pesquisador ou parte de uma comunidade de imigração, ajude a torná-la conhecida.</p>
+
+  <p>O Brasil foi construído pela força de milhões de pessoas que vieram de longe. É tempo de devolver os nomes que se alteraram na chegada.</p>
+
+  <p class="cry">Nada se apaga.<br><b>Tudo volta a se ligar.</b></p>
+
+  <div class="sign">
+    <div class="name">Manifesto pela Identidade Ancestral</div>
+    <div class="meta">Iniciativa cidadã<br>25 de junho de 2026 — Dia do Imigrante</div>
+  </div>
+</main>
+
+<!-- ================= REGISTRO E APOIO ================= -->
+<section class="record">
+  <div class="inner">
+
+    <div class="bloco">
+      <p class="label">O documento</p>
+      <h2>A minuta, íntegra e verificável</h2>
+      <p>Vinte e dois artigos, justificação e estimativa de impacto orçamentário. Baixe e confira você mesmo: o SHA-256 do arquivo deve ser idêntico ao impresso abaixo. É a mesma prova, na sua mão.</p>
+      <p class="hashlabel">SHA-256 do PDF publicado</p>
+      <div class="hash" id="hash-pdf">a2ed807380e4de77b8f2fef7d7daa3919c8e224b8e7229ddbb4dbecc800f0e45</div>
+      <p class="como">macOS/Linux &nbsp;shasum -a 256 Lei_Identidade_Ancestral_Minuta.pdf<br>Windows &nbsp;certutil -hashfile Lei_Identidade_Ancestral_Minuta.pdf SHA256</p>
+      <div class="acoes">
+        <a class="pill cheia" href="Lei_Identidade_Ancestral_Minuta.pdf">↓ Baixar a minuta (PDF)</a>
+        <button class="pill" type="button" data-copiar="hash-pdf">Copiar o hash</button>
+      </div>
     </div>
-    <h1>Manifesto pela Identidade Ancestral</h1>
-    <p class="lede">Pela devolução dos nomes que o Brasil alterou no caminho.</p>
-    <div class="scrollcue">leia<span>↓</span></div>
-  </header>
 
-  <main>
-    <section class="manifesto" aria-label="Manifesto">
-      <hr class="rule">
-
-      <p class="first">Meu avô chamava-se <strong>Eiji Umeda</strong>. Nos registros brasileiros, tornou-se Eije. Uma única vogal trocada pela mão apressada de um escrivão — e um nome que havia atravessado gerações no Japão passou a designar um homem que, a rigor, nunca existiu.</p>
-
-      <p>Ele desembarcou em 1934, a bordo do <em>Hawaii Maru</em>, com a bagagem de quem deixa tudo para trás menos a própria história. Essa história estava no nome. E o nome se perdeu na travessia — não no mar, mas no balcão do cartório.</p>
-
-      <p>Levei anos para reconstruir o que aquela letra apagou. O resultado virou um livro — <em>Eiji não Eije</em> —, cujo título é, ele próprio, uma correção: a afirmação teimosa de que havia um nome verdadeiro sob a grafia errada. Mas, ao pesquisar, descobri que a minha família não era exceção. Era regra.</p>
-
-      <p>Entre 1850 e 1980, o Brasil recebeu milhões de imigrantes — japoneses, italianos, alemães, árabes, judeus, poloneses, ucranianos, armênios, gregos, coreanos, chineses e tantos outros. Os escrivães que os registraram, em sua maioria, não conheciam aqueles alfabetos. Escreviam de ouvido, no tempo curto de uma fila. Assim, irmãos foram registrados com sobrenomes diferentes; acentos sumiram; nomes foram traduzidos, abreviados, recriados. Não houve maldade. Houve pressa e desconhecimento. Mas o efeito durou gerações: famílias separadas dos próprios países de origem por causa de uma letra.</p>
-
-      <p>Quando se perde o nome, perde-se mais do que uma palavra. Perde-se a chave de um arquivo, a linha que liga uma pessoa ao seu avô, o documento que comprova de onde se veio. Perde-se o direito de provar quem se é.</p>
-
-      <p class="law">Por isso escrevi a Lei da Identidade Ancestral.</p>
-
-      <p>É um anteprojeto que cria um direito simples e até hoje inexistente: o de qualquer descendente corrigir, diretamente no cartório e sem processo judicial, a grafia deformada do nome de seu antepassado imigrante — inclusive de quem já morreu —, restaurando-a a partir dos documentos do país de origem. Cria também a Certidão de Linhagem Ancestral, que reconstitui a cadeia familiar rompida, e abre caminho para o resgate de sobrenomes inteiramente suprimidos, como os das mulheres apagadas dos registros. E olha para o futuro: determina que os novos imigrantes tenham seus nomes registrados corretamente, para que esta injustiça não se repita.</p>
-
-      <p>Não sou candidato a nada. Não represento partido algum. Não busco cargo, foro nem lucro. Sou um cidadão, descendente de imigrantes, que decidiu transformar uma ferida particular num instrumento público. Redigi este anteprojeto por conta própria, com rigor técnico, e o <strong>ofereço gratuitamente ao Congresso Nacional</strong> — a qualquer parlamentar, de qualquer partido, que tenha a coragem moral de adotá-lo.</p>
-
-      <p>Faço isto publicamente, e por escrito, por uma razão: para que a origem desta proposta fique registrada. Não pelo crédito em si, mas porque a história desta lei é inseparável da história das famílias que ela pretende reparar — e a primeira delas é a minha.</p>
-
-      <p>A quem ler este manifesto: se você também carrega um nome que foi alterado no caminho, esta causa é sua. Se é parlamentar, o texto está pronto e à sua disposição. Se é jornalista, pesquisador ou parte de uma comunidade de imigração, ajude a torná-la conhecida.</p>
-
-      <p>O Brasil foi construído pela força de milhões de pessoas que vieram de longe. É tempo de devolver os nomes que se alteraram na chegada.</p>
-
-      <p class="cry"><b>Eiji, não Eije.</b><br>E, com ele, todos os outros.</p>
-
-      <div class="sign">
-        <div class="name">Wagner Toshiro Umeda</div>
-        <div class="meta">
-          Autor do anteprojeto da <em>Lei da Identidade Ancestral</em><br>
-          25 de junho de 2026 — Dia do Imigrante
+    <div class="bloco">
+      <p class="label">Anterioridade</p>
+      <h2>Autoria registrada em blockchain</h2>
+      <p>A origem desta proposta está gravada, com data e hora, em duas redes públicas e independentes desde 24 de junho de 2026, sobre o <a href="Lei_Identidade_Ancestral_Minuta_v9.pdf">texto original do anteprojeto</a>. Qualquer pessoa pode conferir.</p>
+      <p class="hashlabel">Hash registrado (idêntico nas duas redes)</p>
+      <div class="hash">c57148efd8466c5506e5a25188bf579ed63b3f4c56d46ed31dcd30ad5b9f6eb2</div>
+      <!-- AO REGISTRAR O PDF ATUAL (a2ed80...) NA ORIGINALMY:
+           troque o hash acima e os dois links de transação abaixo. -->
+      <div class="nets">
+        <div class="net">
+          <div class="who">
+            <div class="net-name"><span class="dot"></span>Ethereum Classic</div>
+            <div class="when">24/06/2026 20:27:54 (GMT−3)</div>
+          </div>
+          <a class="pill" href="https://etc.blockscout.com/tx/0xfd440a97bd12a0da0469f3869d8f1fa92f96283c46542234bbca234b452121ee" rel="noopener">Verificar →</a>
+        </div>
+        <div class="net">
+          <div class="who">
+            <div class="net-name"><span class="dot"></span>Decred</div>
+            <div class="when">24/06/2026 21:08:06 (GMT−3)</div>
+          </div>
+          <a class="pill" href="https://dcrdata.decred.org/tx/fb55e976552479e0bcf3c16d593f66019c46d009f2d68fb47ca3c9ed2e4f3a5c" rel="noopener">Verificar →</a>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="record" aria-label="Registro e apoio">
-      <div class="inner">
+    <div class="bloco apoio">
+      <p class="label">Apoie esta causa</p>
+      <h2>Vinte mil assinaturas levam este texto ao Senado.</h2>
+      <p class="intro">Esta proposta pode chegar ao Senado como iniciativa cidadã. Para isso, precisa de <b>20 mil apoios</b> no portal e-Cidadania. Deixe seu e-mail e avisaremos no dia em que o apoio abrir.</p>
 
-        <div class="seal">
-          <p class="label">Autoria registrada em blockchain</p>
-          <p class="desc">A autoria e a anterioridade do anteprojeto desta lei estão gravadas em duas blockchains públicas e independentes, com data e hora — verificáveis por qualquer pessoa.</p>
-          <p class="hashlabel">Hash do documento (idêntico nas duas redes)</p>
-          <div class="hash">c57148efd8466c5506e5a25188bf579ed63b3f4c56d46ed31dcd30ad5b9f6eb2</div>
-
-          <div class="nets">
-            <div class="net">
-              <div class="who">
-                <div class="net-name"><span class="dot"></span>Ethereum Classic</div>
-                <div class="when">24/06/2026 20:27:54 (GMT-03:00)</div>
-              </div>
-              <a class="verify sm" href="https://etc.blockscout.com/tx/0xfd440a97bd12a0da0469f3869d8f1fa92f96283c46542234bbca234b452121ee" target="_blank" rel="noopener">Verificar →</a>
-            </div>
-
-            <div class="net">
-              <div class="who">
-                <div class="net-name"><span class="dot"></span>Decred</div>
-                <div class="when">24/06/2026 21:08:06 (GMT-03:00)</div>
-              </div>
-              <!-- Verificação da Decred (dcrdata) -->
-              <a class="verify sm" href="https://dcrdata.decred.org/tx/fb55e976552479e0bcf3c16d593f66019c46d009f2d68fb47ca3c9ed2e4f3a5c" target="_blank" rel="noopener">Verificar →</a>
-            </div>
-          </div>
-
-          <div class="docdl">
-            <a class="doclink" href="Lei_Identidade_Ancestral_Minuta_v9.pdf" download>↓ Baixar o anteprojeto (PDF)</a>
-            <p class="docnote">Baixe o documento e confira você mesmo: o SHA-256 do arquivo deve ser idêntico ao hash acima. É a mesma prova, na sua mão.</p>
-          </div>
+      <!-- Formulário conectado ao Brevo (lista: Apoiadores — Lei da Identidade Ancestral) -->
+      <form class="signup" method="POST"
+            action="https://c96ab225.sibforms.com/serve/MUIFAAZXXrb6Wsd87lmyV85VTT5LCU1KCtkiCbhxruEKCl7kJSn0HLzaV5XFjWMWWB0TK2NtNe5Bai6Z3wjttiDxMTsQe6gfdQGfHT_fx5GWt7ufEYRPdMNOJa5fofJyqZlWgzZRgC5c-QI0aB3xbADRljUQaksm8gIkitXRNWpwTSBy-sxvHWztOhBlYTXzVcV57aFPvXWZEFfT0A==">
+        <label for="email">Receba o aviso de abertura do apoio</label>
+        <div class="field">
+          <input id="email" type="email" name="EMAIL" placeholder="seu@email.com" required autocomplete="email">
+          <button class="btn-primary" type="submit">Quero ser avisado</button>
         </div>
+        <p class="consent">Usaremos seu e-mail apenas para avisar sobre esta iniciativa. Sem spam; você pode sair quando quiser.</p>
+        <!-- Campos exigidos pelo Brevo: anti-robô (deixe vazio) e idioma -->
+        <input type="text" name="email_address_check" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="hidden" name="locale" value="pt">
+      </form>
 
-        <div class="support">
-          <h2>Apoie esta causa</h2>
-          <p class="intro">Esta proposta pode chegar ao Senado como iniciativa cidadã. Para isso, precisa de <b>20 mil apoios</b> no portal e-Cidadania. Deixe seu e-mail e avisaremos no dia em que o apoio abrir.</p>
-
-          <!-- Formulário conectado ao Brevo (lista: Apoiadores — Lei da Identidade Ancestral) -->
-          <form class="signup" method="POST"
-                action="https://c96ab225.sibforms.com/serve/MUIFAAZXXrb6Wsd87lmyV85VTT5LCU1KCtkiCbhxruEKCl7kJSn0HLzaV5XFjWMWWB0TK2NtNe5Bai6Z3wjttiDxMTsQe6gfdQGfHT_fx5GWt7ufEYRPdMNOJa5fofJyqZlWgzZRgC5c-QI0aB3xbADRljUQaksm8gIkitXRNWpwTSBy-sxvHWztOhBlYTXzVcV57aFPvXWZEFfT0A==">
-            <label for="email">Receba o aviso de abertura do apoio</label>
-            <div class="field">
-              <input id="email" type="email" name="EMAIL" placeholder="seu@email.com" required autocomplete="email">
-              <button class="btn-primary" type="submit">Quero ser avisado</button>
-            </div>
-            <p class="consent">Usaremos seu e-mail apenas para avisar sobre esta iniciativa. Sem spam; você pode sair quando quiser.</p>
-            <!-- Campos exigidos pelo Brevo: anti-robô (deixe vazio) e idioma -->
-            <input type="text" name="email_address_check" value="" style="position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <input type="hidden" name="locale" value="pt">
-          </form>
-
-          <div class="ecidadania">
-            <!-- Quando a Ideia Legislativa estiver no ar, troque o href "#" pela URL do e-Cidadania. -->
-            <a class="btn-ghost" href="#" rel="noopener">Apoiar no e-Cidadania</a>
-            <p class="note">O apoio é gratuito e leva cerca de um minuto, com login gov.br. Link disponível na abertura.</p>
-          </div>
-        </div>
-
+      <div class="ecidadania">
+        <!-- Quando a Ideia Legislativa estiver no ar, troque o href "#" pela URL do e-Cidadania. -->
+        <a class="btn-ghost" href="#" rel="noopener">Apoiar no e-Cidadania</a>
+        <p class="note">O apoio é gratuito e leva cerca de um minuto, com login gov.br. Link disponível na abertura.</p>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    <p><span class="org">Iniciativa cidadã, sem vínculo partidário.</span><br>
-    Wagner Toshiro Umeda · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a></p>
-  </footer>
+      <div class="divulgue">
+        <p>Enquanto o apoio não abre, o que mais vale é o compartilhamento: envie esta página a quem carrega um nome que foi alterado no caminho. Cada assinatura começa por alguém que reconheceu a própria história aqui.</p>
+        <div class="acoes">
+          <a class="btn-share" id="zap" href="https://wa.me/?text=Entre%201850%20e%201988%2C%20milh%C3%B5es%20de%20nomes%20de%20imigrantes%20foram%20alterados%20nos%20cart%C3%B3rios%20do%20Brasil.%20A%20Lei%20da%20Identidade%20Ancestral%20quer%20devolv%C3%AA-los%20%E2%80%94%20sem%20apagar%20nenhum%20registro.%20Leia%20o%20manifesto%3A%20https%3A%2F%2Fidentidadeancestral.github.io%2F" target="_blank" rel="noopener">Compartilhar no WhatsApp</a>
+          <button class="btn-copiar" type="button" data-texto="https://identidadeancestral.github.io/">Copiar o link</button>
+        </div>
+      </div>
+    </div>
 
+  </div>
+</section>
+
+<footer>
+  Iniciativa cidadã, sem vínculo partidário · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a>
+</footer>
+
+<script>
+/* ---- copiar hash ---- */
+document.querySelectorAll("button[data-copiar],button[data-texto]").forEach(function(b){
+  b.addEventListener("click",function(){
+    var alvo=b.getAttribute("data-copiar");
+    var el=alvo?document.getElementById(alvo):null;
+    var txt=el?el.textContent.trim():(b.getAttribute("data-texto")||"");
+    function feito(){var o=b.textContent;b.textContent="Copiado";setTimeout(function(){b.textContent=o;},1800);}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(feito,function(){});}
+    else{var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();
+      try{document.execCommand("copy");feito();}catch(e){}document.body.removeChild(ta);}
+  });
+});
+
+/* ---- ciclo de correções: a mesma ferida em muitos alfabetos ---- */
+(function(){
+  var motion = window.matchMedia("(prefers-reduced-motion: no-preference)");
+  if(!motion.matches) return;
+  var casos=[
+    {w:"MULLER",   r:'M<span class="d">Ü</span>LLER',            o:"alemão — o trema que o balcão não tinha"},
+    {w:"SURUOCA",  r:'<span class="d">TS</span>URUOKA',          o:"japonês — o som que o português não escreveu"},
+    {w:"ROCHA",    r:'RO<span class="d">CCA</span>',             o:"italiano — o sobrenome aportuguesado no balcão"},
+    {w:"VINHOSKI", r:'<span class="d">WIŚNIEW</span>SKI',        o:"polonês — a grafia refeita de ouvido"},
+    {w:"BRANCO",   r:'<span class="d">WEISS</span>',             o:"alemão — o sobrenome traduzido inteiro"},
+    {w:"JOSÉ",     r:'<span class="d">YUSSEF</span>',            o:"árabe — o prenome trocado por um equivalente"}
+  ];
+  var box=document.getElementById("correcao"),
+      w=document.getElementById("c-wrong"),
+      r=document.getElementById("c-right"),
+      o=document.getElementById("c-origem"),
+      i=0;
+  function troca(){
+    if(document.hidden){return;}
+    i=(i+1)%casos.length;
+    var c=casos[i];
+    box.classList.remove("ciclo");
+    void box.offsetWidth;                 /* reinicia as animações */
+    w.textContent=c.w; r.innerHTML=c.r; o.textContent=c.o;
+    var puro=c.r.replace(/<[^>]*>/g,"");
+    if(puro.length>7||c.w.length>7){box.classList.add("longo");}else{box.classList.remove("longo");}
+    box.classList.add("ciclo");
+  }
+  setTimeout(function(){ setInterval(troca, 5200); }, 5600);
+})();
+/* ---- no celular, abre o menu nativo (WhatsApp, Telegram, e-mail...) ---- */
+(function(){
+  var a=document.getElementById("zap");
+  if(!a||!navigator.share) return;
+  a.addEventListener("click",function(e){
+    e.preventDefault();
+    navigator.share({
+      title:"Lei da Identidade Ancestral",
+      text:"Entre 1850 e 1988, milhões de nomes de imigrantes foram alterados nos cartórios do Brasil. A Lei da Identidade Ancestral quer devolvê-los — sem apagar nenhum registro.",
+      url:"https://identidadeancestral.github.io/"
+    }).catch(function(){ window.open(a.href,"_blank","noopener"); });
+  });
+})();
+</script>
 </body>
 </html>
