@@ -346,6 +346,13 @@
   }
   .btn-primary:hover,.btn-primary:focus-visible{background:var(--seal-bright);color:var(--ink);}
   .consent{font-family:var(--ui);font-size:.74rem;color:var(--on-dark-soft);margin:.7rem 0 0;line-height:1.5;}
+  .ok-msg{
+    border:1px solid var(--seal-bright);border-radius:6px;
+    padding:1.2rem 1.3rem;margin:0;
+    font-family:var(--ui);font-size:.98rem;line-height:1.6;color:var(--on-dark);
+  }
+  .ok-msg b{display:block;font-size:1.05rem;margin-bottom:.3rem;color:var(--seal-bright);}
+  .ok-msg:focus{outline:2px solid var(--seal-bright);outline-offset:3px;}
   .ecidadania{margin-top:2.3rem;padding-top:1.9rem;border-top:1px solid rgba(239,237,228,.16);}
   .btn-ghost{
     display:inline-block;font-family:var(--ui);font-size:.95rem;font-weight:600;
@@ -489,7 +496,7 @@
       <p class="intro">Esta proposta pode chegar ao Senado como iniciativa cidadã. Para isso, precisa de <b>20 mil apoios</b> no portal e-Cidadania. Deixe seu e-mail e avisaremos no dia em que o apoio abrir.</p>
 
       <!-- Formulário conectado ao Brevo (lista: Apoiadores — Lei da Identidade Ancestral) -->
-      <form class="signup" method="POST"
+      <form class="signup" id="form-brevo" method="POST" target="brevo_sink"
             action="https://c96ab225.sibforms.com/serve/MUIFAAZXXrb6Wsd87lmyV85VTT5LCU1KCtkiCbhxruEKCl7kJSn0HLzaV5XFjWMWWB0TK2NtNe5Bai6Z3wjttiDxMTsQe6gfdQGfHT_fx5GWt7ufEYRPdMNOJa5fofJyqZlWgzZRgC5c-QI0aB3xbADRljUQaksm8gIkitXRNWpwTSBy-sxvHWztOhBlYTXzVcV57aFPvXWZEFfT0A==">
         <label for="email">Receba o aviso de abertura do apoio</label>
         <div class="field">
@@ -502,6 +509,13 @@
         <input type="hidden" name="locale" value="pt">
         <input type="hidden" name="html_type" value="simple">
       </form>
+      <!-- O Brevo responde em JSON. Enviando para este iframe oculto, a resposta
+           não substitui a página e o aviso de sucesso aparece aqui mesmo. -->
+      <iframe name="brevo_sink" id="brevo_sink" title="Envio do cadastro" style="display:none" aria-hidden="true"></iframe>
+      <p class="ok-msg" id="ok-msg" role="status" tabindex="-1" hidden>
+        <b>Pronto — você está na lista.</b>
+        Avisaremos assim que o apoio no e-Cidadania abrir. Enquanto isso, o que mais ajuda é compartilhar esta página.
+      </p>
 
       <div class="ecidadania">
         <!-- Quando a Ideia Legislativa estiver no ar, troque o href "#" pela URL do e-Cidadania. -->
@@ -604,6 +618,20 @@ document.querySelectorAll("button[data-copiar],button[data-texto]").forEach(func
       document.getElementById("contagem").hidden = false;
     })
     .catch(function(){});
+})();
+/* ---- cadastro Brevo: a resposta cai no iframe oculto e o aviso aparece na própria página ---- */
+(function(){
+  var f=document.getElementById("form-brevo"),
+      sink=document.getElementById("brevo_sink"),
+      ok=document.getElementById("ok-msg");
+  if(!f||!sink||!ok) return;
+  var enviado=false;
+  f.addEventListener("submit",function(){ enviado=true; });
+  sink.addEventListener("load",function(){
+    if(!enviado) return;                 /* ignora o load inicial do iframe */
+    f.hidden=true; ok.hidden=false;
+    try{ ok.focus(); }catch(e){}
+  });
 })();
 </script>
 </body>
