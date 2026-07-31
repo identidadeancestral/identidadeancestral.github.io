@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOMINIS · A Carta do Dia</title>
+<meta property="og:title" content="NOMINIS · A Carta do Dia">
+<meta property="og:description" content="22 arcanos da conexão ancestral. Tire a sua carta.">
+<meta property="og:image" content="cartas/verso.jpg">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=EB+Garamond:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F1626;--ivory:#ECE7D9;--gold:#C9A659;--red:#B5453E;--muted:#8B93A7}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--navy);color:var(--ivory);font-family:'EB Garamond',serif;min-height:100vh;
+display:flex;flex-direction:column;align-items:center;padding:26px 18px 40px;text-align:center}
+.logo{width:clamp(108px,30vw,152px);height:auto;display:block;margin:0 auto .1rem}
+.sub{color:var(--gold);letter-spacing:.2em;font-size:.68rem;margin:.2rem 0 .8rem;text-transform:uppercase}
+#contador{color:var(--muted);font-size:.8rem;letter-spacing:.08em;margin-bottom:.9rem;min-height:1.15em}
+.scene{perspective:1200px;margin-bottom:1.1rem}
+.card{width:min(72vw,300px);aspect-ratio:700/1195;position:relative;transform-style:preserve-3d;
+transition:transform .9s cubic-bezier(.2,.7,.2,1);cursor:pointer}
+.card.flip{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;overflow:hidden;
+box-shadow:0 12px 40px rgba(0,0,0,.55)}
+.face img{width:100%;height:100%;display:block}
+.front{transform:rotateY(180deg)}
+@media (prefers-reduced-motion: reduce){.card{transition:none}}
+button.reveal{font-family:'EB Garamond',serif;font-size:1rem;letter-spacing:.12em;color:var(--navy);
+background:var(--gold);border:0;border-radius:999px;padding:.7rem 1.8rem;cursor:pointer;margin-bottom:1.3rem}
+#idioma{margin-bottom:1rem;font-size:.72rem;letter-spacing:.18em;color:var(--muted);user-select:none}
+#idioma span{cursor:pointer;padding:.15rem .4rem}
+#idioma span.on{color:var(--gold)}
+#leitura{display:none;max-width:34rem;transition:opacity .45s ease}
+#leitura.esmaece{opacity:0}
+.fase{color:var(--muted);letter-spacing:.2em;font-size:.68rem;text-transform:uppercase}
+.fase .sombra{color:var(--red)}
+h2{font-family:'Playfair Display',serif;font-size:1.5rem;margin:.35rem 0 .15rem}
+.en{color:var(--muted);font-size:.85rem;margin-bottom:1rem}
+.verso{font-style:italic;font-size:1.05rem;line-height:1.55;margin:0 0 1.1rem}
+.rotulo{color:var(--gold);letter-spacing:.2em;font-size:.66rem;margin:1rem 0 .3rem;text-transform:uppercase}
+p.txt{font-size:1rem;line-height:1.55;color:#D9D4C8}
+p.perg{font-style:italic;color:#D9D4C8}
+.peca{margin-top:1.5rem;color:var(--muted);font-size:.82rem;letter-spacing:.06em}
+.acoes{margin-top:.9rem;display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center}
+.acoes a{font-size:.9rem;color:var(--ivory);border:1px solid var(--gold);border-radius:999px;
+padding:.55rem 1.2rem;text-decoration:none}
+.acoes a.solid{background:var(--gold);color:var(--navy)}
+footer{margin-top:auto;padding-top:2.2rem;color:var(--muted);font-size:.78rem;line-height:1.7}
+footer a{color:var(--muted)}
+hr.mini{width:56px;border:0;border-top:1px solid var(--gold);margin:.2rem auto 1rem}
+</style>
+</head>
+<body>
+<img class="logo" src="logo_site.png" alt="NOMINIS">
+<div class="sub" id="subtitulo"></div>
+<div id="contador"></div>
+
+<div class="scene"><div class="card" id="card" role="button" aria-label="Revelar a carta">
+  <div class="face back"><img src="cartas/verso.jpg" alt="NOMINIS"></div>
+  <div class="face front"><img id="imgcarta" src="" alt=""></div>
+</div></div>
+<button class="reveal" id="btn"></button>
+
+<div id="idioma" hidden><span id="lpt">PT</span>·<span id="len">EN</span></div>
+
+<section id="leitura">
+  <div class="fase" id="fase"></div>
+  <h2 id="titulo"></h2>
+  <div class="en" id="subt"></div>
+  <hr class="mini">
+  <p class="verso" id="versotxt"></p>
+  <div class="rotulo" id="rot1"></div><p class="txt" id="luz"></p>
+  <div class="rotulo" id="rot2"></div><p class="txt" id="gesto"></p>
+  <div class="rotulo" id="rot3"></div><p class="txt perg" id="perg"></p>
+  <p class="peca" id="peca"></p>
+  <div class="acoes">
+    <a class="solid" id="comprar" target="_blank" rel="noopener"></a>
+    <a id="colecao" href="https://opensea.io/collection/nominis-ancestral" target="_blank" rel="noopener"></a>
+    <a id="zap" target="_blank" rel="noopener"></a>
+    <a id="livro" href="NOMINIS_ebook.pdf" download></a>
+  </div>
+</section>
+
+<footer><span id="rodape"></span><br>Restitutio Nominis · MMXXVI</footer>
+
+<script>
+const CARTAS = [{"num": "0", "fase": 1, "img": "cartas/arcano_00.jpg", "eixo": "Luz", "pt": {"titulo": "O Imigrante", "sub": "The Immigrant", "mov": "I · A Partida", "verso": "Você deixa tudo, menos o nome. O primeiro passo é dado sobre a água — e quem parte inteiro nunca chega igual.", "luz": "Todo caminho espiritual começa com uma partida. Esta carta anuncia o chamado: algo em você quer atravessar — deixe para trás o que pesa e leve o essencial: quem você é.", "gesto": "Feche os olhos e diga em voz alta o nome de quem, na sua família, partiu primeiro — como quem agradece a coragem.", "perg": "Que travessia a minha alma está adiando?"}, "en": {"titulo": "The Immigrant", "sub": "O Imigrante", "mov": "I · The Departure", "verso": "You leave everything but the name. The first step is taken upon water — and whoever departs whole never arrives the same.", "luz": "Every spiritual path begins with a departure. This card announces the call: something in you wants to cross — leave behind what weighs you down and carry the essential: who you are.", "gesto": "Close your eyes and say aloud the name of the first person in your family who left — as someone thanking their courage.", "perg": "What crossing is my soul putting off?"}}, {"num": "I", "fase": 2, "img": "cartas/arcano_01.jpg", "eixo": "Luz", "pt": {"titulo": "A Origem", "sub": "The Origin", "mov": "I · A Partida", "verso": "Antes de qualquer papel, a palavra. O que foi nomeado com amor não se apaga com tinta.", "luz": "Antes de tudo o que dizem de você, existe o que te deram com amor. Esta carta devolve a fonte: você vem de alguém — e isso é alicerce, não acaso.", "gesto": "Escreva à mão, devagar, o nome de um antepassado — e repare no que você sente enquanto escreve.", "perg": "O que em mim veio de longe — e eu nunca agradeci?"}, "en": {"titulo": "The Origin", "sub": "A Origem", "mov": "I · The Departure", "verso": "Before any paper, the word. What was named with love cannot be erased with ink.", "luz": "Before everything they say about you, there is what was given to you with love. This card restores the source: you come from someone — and that is foundation, not chance.", "gesto": "Write an ancestor's name by hand, slowly — and notice what you feel while writing it.", "perg": "What in me came from far away — and I never thanked?"}}, {"num": "II", "fase": 3, "img": "cartas/arcano_02.jpg", "eixo": "Luz", "pt": {"titulo": "O Arquivo Familiar", "sub": "The Family Archive", "mov": "I · A Partida", "verso": "O que a família guarda em silêncio, o tempo transforma em prova. Abra a caixa: ela esperava por você.", "luz": "A família guarda mais do que mostra. Esta carta abre o baú: fotografias, objetos, histórias pela metade — a memória esperava por você.", "gesto": "Toque hoje um objeto que pertenceu à família — papel, foto, tecido — e vire-o à procura do verso.", "perg": "Que memória da minha família está guardada, esperando que eu a visite?"}, "en": {"titulo": "The Family Archive", "sub": "O Arquivo Familiar", "mov": "I · The Departure", "verso": "What the family keeps in silence, time turns into proof. Open the box: it was waiting for you.", "luz": "A family keeps more than it shows. This card opens the chest: photographs, objects, half-told stories — memory was waiting for you.", "gesto": "Touch something today that belonged to your family — paper, photograph, cloth — and turn it over, looking for the other side.", "perg": "Which memory of my family lies stored away, waiting for me to visit it?"}}, {"num": "III", "fase": 4, "img": "cartas/arcano_03.jpg", "eixo": "Luz", "pt": {"titulo": "A Terra Nova", "sub": "The New Land", "mov": "I · A Partida", "verso": "A terra não pergunta de onde vens; pergunta o que plantas. Toda raiz aceita novo chão.", "luz": "Pertencer é plantar. Esta carta fala do dom de criar raiz nova sem cortar a raiz antiga — duas terras podem viver na mesma árvore.", "gesto": "Ponha a mão na terra (um vaso serve) e nomeie algo que a sua família plantou e ainda vive em você.", "perg": "O que a minha família plantou que ainda floresce em mim?"}, "en": {"titulo": "The New Land", "sub": "A Terra Nova", "mov": "I · The Departure", "verso": "The land does not ask where you come from; it asks what you plant. Every root accepts new ground.", "luz": "To belong is to plant. This card speaks of the gift of growing new roots without cutting the old ones — two lands can live in the same tree.", "gesto": "Put your hand in the soil (a flowerpot will do) and name something your family planted that still lives in you.", "perg": "What did my family plant that still flowers in me?"}}, {"num": "IV", "fase": 5, "img": "cartas/arcano_04.jpg", "eixo": "Luz", "pt": {"titulo": "O Porto", "sub": "The Port", "mov": "I · A Partida", "verso": "Todo limiar tem um guardião. Ao cruzar o portão, algo é pedido em troca — saiba o que entregas.", "luz": "A vida é feita de portões: começos, mudanças, escolhas. Esta carta pede presença nos limiares — atravesse acordado, sabendo o que você leva.", "gesto": "Na próxima porta que cruzar, pare um segundo no limiar — e atravesse lembrando de quem você é.", "perg": "Que limiar estou atravessando agora — e o que não posso entregar nele?"}, "en": {"titulo": "The Port", "sub": "O Porto", "mov": "I · The Departure", "verso": "Every threshold has a keeper. Crossing the gate, something is asked in return — know what you hand over.", "luz": "Life is made of gates: beginnings, changes, choices. This card asks for presence at thresholds — cross awake, knowing what you carry.", "gesto": "At the next door you cross, pause a second on the threshold — and cross remembering who you are.", "perg": "Which threshold am I crossing now — and what must I not hand over at it?"}}, {"num": "V", "fase": 6, "img": "cartas/arcano_05.jpg", "eixo": "Sombra", "pt": {"titulo": "A Pena do Escrivão", "sub": "The Clerk's Pen", "mov": "II · A Travessia", "verso": "Uma mão apressada decide o que séculos guardaram. Nem tudo o que está escrito é verdade — e nem toda verdade foi escrita.", "luz": "Dominada, esta carta ensina o poder da palavra: o que você diz sobre os outros — e sobre si — escreve destinos. Use a pena com reverência.", "gesto": "Copie à mão uma palavra escrita por um antepassado — e sinta a mão dele guiar a sua.", "perg": "Que palavra dita por outros eu carrego como se fosse minha?"}, "en": {"titulo": "The Clerk's Pen", "sub": "A Pena do Escrivão", "mov": "II · The Crossing", "verso": "A hurried hand decides what centuries preserved. Not everything written is true — and not every truth was written.", "luz": "Mastered, this card teaches the power of the word: what you say about others — and about yourself — writes destinies. Use the pen with reverence.", "gesto": "Copy by hand a word written by an ancestor — and feel their hand guiding yours.", "perg": "What word spoken by others do I carry as if it were my own?"}}, {"num": "VI", "fase": 7, "img": "cartas/arcano_06.jpg", "eixo": "Luz", "pt": {"titulo": "Transcender", "sub": "To Transcend", "mov": "II · A Travessia", "verso": "Entre duas línguas, escolhe o coração. O nome verdadeiro é o que soa igual nas duas margens.", "luz": "Entre dois mundos, o coração conhece o caminho. Esta carta abençoa as escolhas que honram as duas margens — o que veio antes e o que virá.", "gesto": "Diga uma mesma palavra de afeto nas duas línguas da sua história — e escute qual delas o coração reconhece.", "perg": "Que escolha o meu coração já fez — e a minha boca ainda não disse?"}, "en": {"titulo": "To Transcend", "sub": "Transcender", "mov": "II · The Crossing", "verso": "Between two languages, the heart chooses. The true name is the one that sounds the same on both shores.", "luz": "Between two worlds, the heart knows the way. This card blesses the choices that honour both shores — what came before and what is to come.", "gesto": "Say the same word of affection in both languages of your history — and listen for the one your heart recognises.", "perg": "What choice has my heart already made — that my mouth has not yet spoken?"}}, {"num": "VII", "fase": 8, "img": "cartas/arcano_07.jpg", "eixo": "Luz", "pt": {"titulo": "A Travessia", "sub": "The Crossing", "mov": "II · A Travessia", "verso": "O mar não devolve o que leva — mas leva quem sabe aonde chegar. Avança: a direção é tua.", "luz": "O mar é grande e a direção é sua. Esta carta é a fé em movimento: avance mesmo sem ver a outra margem — quem te trouxe até aqui atravessou coisa pior.", "gesto": "Num mapa aberto, trace com o dedo o caminho que os seus fizeram até aqui — sem pressa.", "perg": "Para onde, exatamente, estou indo — e quem me acompanha do outro lado do tempo?"}, "en": {"titulo": "The Crossing", "sub": "A Travessia", "mov": "II · The Crossing", "verso": "The sea does not return what it takes — but it carries those who know where they are going. Move forward: the direction is yours.", "luz": "The sea is vast and the direction is yours. This card is faith in motion: move forward even without seeing the far shore — those who brought you here crossed worse.", "gesto": "On an open map, trace with your finger the path your people took to get here — without hurrying.", "perg": "Where exactly am I going — and who walks with me from the other side of time?"}}, {"num": "VIII", "fase": 9, "img": "cartas/arcano_08.jpg", "eixo": "Luz", "pt": {"titulo": "O Registro de Desembarque", "sub": "The Arrival Record", "mov": "II · A Travessia", "verso": "O que foi gravado uma vez resiste ao século. A força não grita: assina.", "luz": "Houve um dia em que os seus chegaram. Esta carta celebra a chegada — o cansaço, o alívio, o primeiro chão. Honrar esse dia é honrar tudo o que veio depois.", "gesto": "Diga em voz alta, devagar, o lugar de onde a sua família veio — como quem chega.", "perg": "De onde os meus vieram — e o que esse lugar ainda diz em mim?"}, "en": {"titulo": "The Arrival Record", "sub": "O Registro de Desembarque", "mov": "II · The Crossing", "verso": "What was once engraved withstands the century. Strength does not shout: it signs.", "luz": "There was a day when your people arrived. This card celebrates the arrival — the exhaustion, the relief, the first ground. To honour that day is to honour all that came after.", "gesto": "Say aloud, slowly, the place your family came from — as someone arriving.", "perg": "Where did my people come from — and what does that place still say in me?"}}, {"num": "IX", "fase": 10, "img": "cartas/arcano_09.jpg", "eixo": "Luz", "pt": {"titulo": "O Guardião da Memória", "sub": "The Keeper of Memory", "mov": "II · A Travessia", "verso": "Alguém acendeu uma lâmpada para que não te perdesses. Honra quem lembrou por ti no escuro.", "luz": "Há alguém que lembra por você. Esta carta manda visitá-lo: os mais velhos são bibliotecas acesas — e toda lâmpada, um dia, se apaga.", "gesto": "Ligue hoje para a pessoa mais velha da família e faça uma única pergunta: como era a nossa história?", "perg": "Quem, na minha família, ainda lembra — e o que eu nunca perguntei a essa pessoa?"}, "en": {"titulo": "The Keeper of Memory", "sub": "O Guardião da Memória", "mov": "II · The Crossing", "verso": "Someone lit a lamp so you would not be lost. Honour the one who remembered for you in the dark.", "luz": "There is someone who remembers for you. This card sends you to visit them: the elders are lit libraries — and every lamp, one day, goes out.", "gesto": "Call the oldest person in your family today and ask a single question: what was our story?", "perg": "Who in my family still remembers — and what have I never asked them?"}}, {"num": "X", "fase": 11, "img": "cartas/arcano_10.jpg", "eixo": "Luz", "pt": {"titulo": "A Roda das Gerações", "sub": "The Wheel of Generations", "mov": "III · As Provas", "verso": "O erro que não se corrige, gira. Cada geração repete a grafia que nenhuma escolheu — até que uma pare a roda.", "luz": "O que gira pode parar; o que se repete pode mudar. Esta carta entrega o eixo da roda à sua mão: os padrões de família não são sentença — são convite à consciência.", "gesto": "Desenhe um círculo com os nomes das gerações e marque o ponto onde a roda muda: você.", "perg": "Que padrão da minha família chegou à minha vez de transformar?"}, "en": {"titulo": "The Wheel of Generations", "sub": "A Roda das Gerações", "mov": "III · The Trials", "verso": "The error left uncorrected turns. Each generation repeats the spelling none of them chose — until one stops the wheel.", "luz": "What turns can stop; what repeats can change. This card places the wheel's axle in your hand: family patterns are not a sentence — they are an invitation to awareness.", "gesto": "Draw a circle with the names of the generations and mark the point where the wheel changes: you.", "perg": "Which pattern of my family has reached my turn to transform?"}}, {"num": "XI", "fase": 12, "img": "cartas/arcano_11.jpg", "eixo": "Luz", "pt": {"titulo": "O Anteprojeto", "sub": "The Draft Law", "mov": "III · As Provas", "verso": "A balança não se move por desejo, mas por escrito. Quando a lei falta, escreve-a.", "luz": "O desejo vira destino quando vira compromisso. Esta carta pede que você escreva o que pretende devolver à sua linhagem — em uma linha, com data.", "gesto": "Escreva numa linha, à mão, o que você promete devolver aos seus — e assine com a data.", "perg": "Que promessa a minha linhagem espera de mim?"}, "en": {"titulo": "The Draft Law", "sub": "O Anteprojeto", "mov": "III · The Trials", "verso": "The scales do not move by desire, but by writing. When the law is missing, write it.", "luz": "Desire becomes destiny when it becomes commitment. This card asks you to write what you intend to give back to your lineage — in one line, with a date.", "gesto": "Write in one line, by hand, what you promise to give back to your people — and sign it with today's date.", "perg": "What promise does my lineage await from me?"}}, {"num": "XII", "fase": 13, "img": "cartas/arcano_12.jpg", "eixo": "Luz", "pt": {"titulo": "O Suspenso", "sub": "The Suspended", "mov": "III · As Provas", "verso": "Há nomes que aguardam de cabeça para baixo. A espera também é travessia — muda o olhar, não o rumo.", "luz": "Nem toda espera é atraso. Esta carta consagra a pausa: de cabeça para baixo, o mundo mostra o que a pressa esconde.", "gesto": "Olhe por um minuto um retrato de família de cabeça para baixo — e repare no que nunca tinha visto.", "perg": "O que esta espera está tentando me mostrar?"}, "en": {"titulo": "The Suspended", "sub": "O Suspenso", "mov": "III · The Trials", "verso": "There are names that wait upside down. Waiting too is a crossing — it changes the view, not the course.", "luz": "Not every wait is a delay. This card consecrates the pause: upside down, the world shows what haste conceals.", "gesto": "Look at a family portrait upside down for one minute — and notice what you had never seen.", "perg": "What is this waiting trying to show me?"}}, {"num": "XIII", "fase": 14, "img": "cartas/arcano_13.jpg", "eixo": "Sombra", "pt": {"titulo": "A Lápide", "sub": "The Gravestone", "mov": "III · As Provas", "verso": "Na pedra, o nome errado parece eterno. Mas até a pedra pode ser recortada — a morte não encerra a grafia.", "luz": "Encarada, esta carta liberta: a morte interrompe a presença, não o vínculo. O que ficou por dizer ainda pode ser dito — os mortos têm tempo.", "gesto": "Escreva num papel pequeno o que ficou por dizer — e guarde-o perto de onde você dorme, até saber o que fazer com ele.", "perg": "O que ficou por dizer a alguém que já partiu?"}, "en": {"titulo": "The Gravestone", "sub": "A Lápide", "mov": "III · The Trials", "verso": "In stone, the wrong name looks eternal. But even stone can be recut — death does not close the spelling.", "luz": "Faced, this card frees: death interrupts presence, not the bond. What went unsaid can still be said — the dead have time.", "gesto": "Write on a small piece of paper what went unsaid — and keep it near where you sleep, until you know what to do with it.", "perg": "What went unsaid to someone who has already gone?"}}, {"num": "XIV", "fase": 15, "img": "cartas/arcano_14.jpg", "eixo": "Luz", "pt": {"titulo": "A Prova", "sub": "The Proof", "mov": "III · As Provas", "verso": "Um papel atravessou guerra, mudança e esquecimento para chegar à tua mão. Mistura o antigo ao novo, com medida.", "luz": "A verdade se tece elo a elo. Esta carta abençoa a paciência: junte as partes da história com medida — o antigo e o novo podem viver na mesma trama.", "gesto": "Reúna três lembranças da família num mesmo lugar e olhe para elas juntas, em silêncio, por um minuto.", "perg": "Que memória da minha família pede confirmação — e a quem posso perguntar?"}, "en": {"titulo": "The Proof", "sub": "A Prova", "mov": "III · The Trials", "verso": "A paper crossed war, upheaval and forgetting to reach your hand. Blend the old with the new, with measure.", "luz": "Truth is woven link by link. This card blesses patience: gather the parts of the story with measure — the old and the new can live in the same weave.", "gesto": "Gather three family keepsakes in one place and look at them together, in silence, for a minute.", "perg": "Which memory of my family asks to be confirmed — and whom can I ask?"}}, {"num": "XV", "fase": 16, "img": "cartas/arcano_15.jpg", "eixo": "Sombra", "pt": {"titulo": "O Carimbo", "sub": "The Stamp", "mov": "III · As Provas", "verso": "O círculo de tinta acorrenta mais que o ferro. O que o poder grava sem perguntar, só a verdade desgrava.", "luz": "Vista de frente, esta carta mostra as correntes: rótulos, vereditos e “sempre foi assim” que prendem mais que ferro. Ver a corrente já é meio caminho para soltá-la.", "gesto": "Escreva numa folha algo que disseram que você era — e não é. Dobre-a até ficar pequena: o destino dela é seu.", "perg": "Que verdade minha vive presa sob um selo que ninguém questionou?"}, "en": {"titulo": "The Stamp", "sub": "O Carimbo", "mov": "III · The Trials", "verso": "The circle of ink binds tighter than iron. What power engraves without asking, only truth can unengrave.", "luz": "Seen head-on, this card reveals the chains: labels, verdicts and “it has always been this way” that bind tighter than iron. To see the chain is half the way to loosening it.", "gesto": "Write on a sheet something they said you were — and are not. Fold it until it is small: its fate is yours.", "perg": "What truth of mine lives sealed under a stamp no one ever questioned?"}}, {"num": "XVI", "fase": 17, "img": "cartas/arcano_16.jpg", "eixo": "Sombra", "pt": {"titulo": "A Queda", "sub": "The Fall", "mov": "III · As Provas", "verso": "Num relâmpago de tinta, a torre do nome cai. O que desaba de repente revela o que estava mal escrito.", "luz": "O que cai de repente já estava rachado. Encarada, esta carta é alívio: o chão da verdade é mais firme que a torre da versão bonita.", "gesto": "Rasgue uma folha com a versão que ruiu — e guarde os pedaços num envelope: o que caiu também é memória.", "perg": "Que verdade eu temo — e o que essa hesitação está protegendo?"}, "en": {"titulo": "The Fall", "sub": "A Queda", "mov": "III · The Trials", "verso": "In a lightning flash of ink, the tower of the name falls. What collapses suddenly reveals what was badly written.", "luz": "What falls suddenly was already cracked. Faced, this card is relief: the ground of truth is firmer than the tower of the pretty version.", "gesto": "Tear up a sheet bearing the version that collapsed — and keep the pieces in an envelope: what fell is memory too.", "perg": "What truth do I fear — and what is that hesitation protecting?"}}, {"num": "XVII", "fase": 18, "img": "cartas/arcano_17.jpg", "eixo": "Luz", "pt": {"titulo": "O Selo Criptográfico", "sub": "The Cryptographic Seal", "mov": "IV · O Retorno da Luz", "verso": "Há uma estrela que nenhuma mão apaga: a prova que tu mesmo gravaste. Fixa tua verdade onde o tempo não alcança.", "luz": "Há verdades que merecem ficar gravadas para sempre — fora do alcance do tempo e da opinião. Esta carta pede: escolha a sua e fixe-a.", "gesto": "Escolha a lembrança mais verdadeira que você guarda da família e escreva a data de hoje ao lado dela.", "perg": "Que verdade da minha história merece ficar gravada para os que virão?"}, "en": {"titulo": "The Cryptographic Seal", "sub": "O Selo Criptográfico", "mov": "IV · The Return of the Light", "verso": "There is a star no hand can put out: the proof you engraved yourself. Fix your truth where time cannot reach.", "luz": "There are truths that deserve to be engraved forever — beyond the reach of time and opinion. This card asks: choose yours and fix it.", "gesto": "Choose the truest memory you keep of your family and write today's date beside it.", "perg": "Which truth of my story deserves to be engraved for those who come after?"}}, {"num": "XVIII", "fase": 19, "img": "cartas/arcano_18.jpg", "eixo": "Luz", "pt": {"titulo": "O Silêncio", "sub": "The Silence", "mov": "IV · O Retorno da Luz", "verso": "A névoa cobre o que a família não disse. Sob a lua, o não-dito pede nome — escuta o que ninguém contou.", "luz": "Sob a lua, o que não foi contado pede escuta. Esta carta afina o ouvido: os silêncios da família também falam — escute sem forçar.", "gesto": "Fique um minuto em silêncio diante de uma foto sem legenda e anote a primeira pergunta que vier.", "perg": "Sobre o que a minha família muda de assunto — e desde quando?"}, "en": {"titulo": "The Silence", "sub": "O Silêncio", "mov": "IV · The Return of the Light", "verso": "The mist covers what the family did not say. Under the moon, the unsaid asks for a name — listen to what no one told.", "luz": "Under the moon, what went untold asks to be heard. This card tunes the ear: a family's silences also speak — listen without forcing.", "gesto": "Sit one minute in silence before a photograph with no caption and write down the first question that comes.", "perg": "What does my family change the subject about — and since when?"}}, {"num": "XIX", "fase": 20, "img": "cartas/arcano_19.jpg", "eixo": "Luz", "pt": {"titulo": "A Restituição", "sub": "The Restitution", "mov": "IV · O Retorno da Luz", "verso": "O sol não pede licença para voltar. O que é devolvido brilha em dobro: pela luz e pela justiça.", "luz": "O que é devolvido brilha em dobro. Esta carta anuncia reencontro: algo que parecia perdido — um vínculo, uma história, uma paz — está voltando para casa.", "gesto": "Acenda uma vela ou um incenso, diga o nome de quem veio antes — e uma única palavra: obrigado.", "perg": "O que está voltando para mim — e como vou recebê-lo?"}, "en": {"titulo": "The Restitution", "sub": "A Restituição", "mov": "IV · The Return of the Light", "verso": "The sun asks no permission to return. What is given back shines twice: for the light and for the justice.", "luz": "What is given back shines twice. This card announces reunion: something that seemed lost — a bond, a story, a peace — is coming home.", "gesto": "Light a candle or incense, say the name of the one who came before — and a single word: thank you.", "perg": "What is coming back to me — and how will I receive it?"}}, {"num": "XX", "fase": 21, "img": "cartas/arcano_20.jpg", "eixo": "Luz", "pt": {"titulo": "O Chamado", "sub": "The Calling", "mov": "IV · O Retorno da Luz", "verso": "Uma trombeta chama cada nome pela forma verdadeira — e até os mortos respondem. Levanta: és chamado como nasceste.", "luz": "Diga — e algo desperta. Esta carta é a voz da linhagem chamando você pelo que você é. Responda em voz alta: os que vieram antes escutam pelo seu peito.", "gesto": "Diga o nome ancestral completo em voz alta, três vezes, cada vez mais devagar.", "perg": "A que chamado da minha linhagem chegou a hora de responder?"}, "en": {"titulo": "The Calling", "sub": "O Chamado", "mov": "IV · The Return of the Light", "verso": "A trumpet calls each name in its true form — and even the dead answer. Rise: you are called as you were born.", "luz": "Speak — and something awakens. This card is the voice of the lineage calling you by what you are. Answer aloud: those who came before listen through your chest.", "gesto": "Say the full ancestral name aloud, three times, each time more slowly.", "perg": "Which call from my lineage is it time to answer?"}}, {"num": "XXI", "fase": 22, "img": "cartas/arcano_21.jpg", "eixo": "Luz", "pt": {"titulo": "A Grande Obra", "sub": "The Great Work", "mov": "IV · O Retorno da Luz", "verso": "Nenhum nome se restitui sozinho. Quando o círculo se fecha, mil grafias dançam inteiras — o mundo é feito de nomes certos.", "luz": "A conexão aconteceu: você e os que vieram antes, na mesma mesa, no mesmo agora. Esta carta fecha o círculo — e todo círculo fechado vira ponto de partida para alguém.", "gesto": "Ensine hoje a alguém uma coisa que esta jornada lhe deu — começando por uma história de família.", "perg": "Com quem vou partilhar o que encontrei nesta jornada?"}, "en": {"titulo": "The Great Work", "sub": "A Grande Obra", "mov": "IV · The Return of the Light", "verso": "No name is restored alone. When the circle closes, a thousand spellings dance whole — the world is made of names set right.", "luz": "The connection has happened: you and those who came before, at the same table, in the same now. This card closes the circle — and every closed circle becomes someone's starting point.", "gesto": "Teach someone today one thing this journey gave you — beginning with a family story.", "perg": "With whom will I share what I found on this journey?"}}];
+const T = {"pt": {"sub": "O Livro dos Antigos Nomes · A Carta do Dia", "revelar": "Revelar a carta do dia", "luz": "À luz", "gesto": "O gesto", "perg": "Pergunta ao ancestral", "fase": "Fase {f} de 22 · Movimento {m}", "eixoL": "eixo luz", "eixoS": "eixo sombra", "peca": "Peça única (1/1) na rede Base · arcano {n} de XXI", "comprar": "Colecionar esta carta", "colecao": "Ver a coleção", "share": "Compartilhar", "livro": "Livro gratuito (PDF)", "rodape": "A jornada que originou este baralho está no livro <a href=\"https://identidadeancestral.github.io/livro/\"><em>Eiji, não Eije</em></a>.", "visitas": "visitas", "msg": "Minha carta do dia no NOMINIS: {t}. Tire a sua: "}, "en": {"sub": "The Book of Ancient Names · The Card of the Day", "revelar": "Reveal the card of the day", "luz": "In the light", "gesto": "The gesture", "perg": "Question to the ancestor", "fase": "Phase {f} of 22 · Movement {m}", "eixoL": "light axis", "eixoS": "shadow axis", "peca": "Unique piece (1/1) on Base · arcanum {n} of XXI", "comprar": "Collect this card", "colecao": "View the collection", "share": "Share", "livro": "Free book (PDF)", "rodape": "The journey behind this deck is told in the book <a href=\"https://identidadeancestral.github.io/livro/\"><em>Eiji, não Eije</em></a>.", "visitas": "visits", "msg": "My card of the day on NOMINIS: {t}. Draw yours: "}};
+const CONTRATO = "0x6ef45c66b1a62e22edb80046e8b80d814241e4c4";
+const COLECAO = "https://opensea.io/collection/nominis-ancestral";
+// token de cada carta, confirmado um a um. O que não estiver aqui leva à coleção.
+const TOKENS = {"0": 2};
+const RODIZIO_MS = 26000;             // tempo de leitura antes de trocar de idioma
+
+const itemUrl = carta => TOKENS[carta.num]
+  ? "https://opensea.io/item/base/" + CONTRATO + "/" + TOKENS[carta.num]
+  : COLECAO;
+function sorteio(n){
+  if (window.crypto && crypto.getRandomValues){
+    const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] % n;
+  }
+  return Math.floor(Math.random()*n);
+}
+const c = CARTAS[sorteio(CARTAS.length)];
+let lang = "pt", manual = false, revelada = false;
+
+const img = document.getElementById("imgcarta");
+img.src = c.img; img.alt = c.num + " · " + c.pt.titulo;
+
+function pintar(){
+  const t = T[lang], d = c[lang];
+  document.documentElement.lang = (lang === "pt" ? "pt-BR" : "en");
+  document.getElementById("subtitulo").textContent = t.sub;
+  document.getElementById("btn").textContent = t.revelar;
+  document.getElementById("lpt").className = lang === "pt" ? "on" : "";
+  document.getElementById("len").className = lang === "en" ? "on" : "";
+  document.getElementById("rodape").innerHTML = t.rodape;
+  if (!revelada) return;
+  const eixo = c.eixo === "Sombra"
+    ? '<span class="sombra">' + t.eixoS + '</span>' : t.eixoL;
+  document.getElementById("fase").innerHTML =
+    t.fase.replace("{f}", c.fase).replace("{m}", d.mov) + " · " + eixo;
+  document.getElementById("titulo").textContent = c.num + " · " + d.titulo;
+  document.getElementById("subt").textContent = d.sub;
+  document.getElementById("versotxt").textContent = "\u201C" + d.verso + "\u201D";
+  document.getElementById("rot1").textContent = t.luz;
+  document.getElementById("luz").textContent = d.luz;
+  document.getElementById("rot2").textContent = t.gesto;
+  document.getElementById("gesto").textContent = d.gesto;
+  document.getElementById("rot3").textContent = t.perg;
+  document.getElementById("perg").textContent = d.perg;
+  document.getElementById("peca").textContent = t.peca.replace("{n}", c.num);
+  document.getElementById("comprar").textContent = t.comprar;
+  document.getElementById("comprar").href = itemUrl(c);
+  document.getElementById("colecao").textContent = t.colecao;
+  document.getElementById("livro").textContent = t.livro;
+  const z = document.getElementById("zap");
+  z.textContent = t.share;
+  z.href = "https://wa.me/?text=" + encodeURIComponent(
+    t.msg.replace("{t}", c.num + " \u00B7 " + d.titulo) + location.href);
+}
+
+function trocar(novo){
+  if (novo === lang) return;
+  const box = document.getElementById("leitura");
+  if (!revelada){ lang = novo; pintar(); return; }
+  box.classList.add("esmaece");
+  setTimeout(() => { lang = novo; pintar(); box.classList.remove("esmaece"); }, 450);
+}
+
+function revelar(){
+  if (revelada) return;
+  revelada = true;
+  document.getElementById("card").classList.add("flip");
+  document.getElementById("leitura").style.display = "block";
+  document.getElementById("idioma").hidden = false;
+  document.getElementById("btn").style.display = "none";
+  pintar();
+}
+document.getElementById("btn").addEventListener("click", revelar);
+document.getElementById("card").addEventListener("click", revelar);
+document.getElementById("lpt").addEventListener("click", () => { manual = true; trocar("pt"); });
+document.getElementById("len").addEventListener("click", () => { manual = true; trocar("en"); });
+setInterval(() => { if (!manual) trocar(lang === "pt" ? "en" : "pt"); }, RODIZIO_MS);
+
+// contador de visitas — tenta dois serviços gratuitos e some se ambos falharem
+(async () => {
+  const alvo = document.getElementById("contador");
+  const fontes = [
+    ["https://api.counterapi.dev/v1/nominis/cartadodia/up", d => d.count],
+    ["https://abacus.jasoncameron.dev/hit/nominis/cartadodia", d => d.value],
+  ];
+  for (const [url, ler] of fontes){
+    try{
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      const n = ler(await r.json());
+      if (typeof n === "number"){
+        alvo.textContent = n.toLocaleString(lang === "pt" ? "pt-BR" : "en-US")
+                         + " " + T[lang].visitas;
+        return;
+      }
+    }catch(e){}
+  }
+})();
+
+pintar();
+</script>
+</body>
+</html>
