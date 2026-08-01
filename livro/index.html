@@ -280,6 +280,38 @@
   </div>
 </section>
 
+<!-- ================= DO LIVRO VEIO O BARALHO ================= -->
+<style>
+.baralho{background:var(--cream);color:var(--sumi);}
+.baralho .lbl{color:var(--beni);}
+.baralho h2{font-size:clamp(1.6rem,5vw,2.1rem);font-weight:600;line-height:1.24;margin:.9rem 0 1.3rem;}
+.baralho .arcanos{display:flex;gap:.5rem;justify-content:flex-start;flex-wrap:wrap;margin:1.9rem 0 0;}
+.baralho .arcanos img{width:clamp(74px,15vw,104px);height:auto;border-radius:3px;
+  box-shadow:0 5px 18px rgba(35,31,32,.22);transition:transform .35s ease;}
+.baralho .arcanos img:hover{transform:translateY(-7px);}
+.baralho .nota{font-size:.9rem;color:var(--sumi-soft);margin-top:1.5rem;}
+@media (prefers-reduced-motion:reduce){.baralho .arcanos img{transition:none}}
+</style>
+
+<section class="baralho">
+  <div class="col" style="padding-top:0;padding-bottom:0">
+    <p class="lbl">Do livro veio o baralho</p>
+    <h2>Vinte e dois arcanos para quem quiser refazer a mesma travessia.</h2>
+    <p>A pesquisa que devolveu um nome também devolveu um caminho. <strong>NOMINIS</strong> traduz esse percurso em 22 cartas — cada uma uma fase da conexão com quem veio antes, da partida ao encontro. Doze delas carregam conceitos de tradições reais sobre o nome e a memória, do <em>kotodama</em> japonês à <em>damnatio memoriae</em> romana. As outras dez não carregam nenhum: onde não havia tradição documentada a citar, o campo ficou vazio. A mesma regra do livro.</p>
+    <p>Todo dia uma carta é sorteada — com o verso, a leitura, um gesto e uma pergunta para levar ao caderno. O livro-guia, de 40 páginas, é gratuito. As cartas são peças únicas registradas em blockchain, para quem quiser guardar a sua.</p>
+    <div class="acoes" style="justify-content:flex-start;margin-top:1.9rem">
+      <a class="btn" href="https://identidadeancestral.github.io/nominis/" rel="noopener">Tirar a carta do dia →</a>
+    </div>
+    <div class="arcanos" aria-hidden="true">
+      <img src="https://identidadeancestral.github.io/nominis/cartas/arcano_00.jpg" alt="">
+      <img src="https://identidadeancestral.github.io/nominis/cartas/arcano_13.jpg" alt="">
+      <img src="https://identidadeancestral.github.io/nominis/cartas/arcano_19.jpg" alt="">
+      <img src="https://identidadeancestral.github.io/nominis/cartas/arcano_21.jpg" alt="">
+    </div>
+    <p class="nota">O Imigrante · A Lápide · A Restituição · A Grande Obra — quatro das vinte e duas.</p>
+  </div>
+</section>
+
 <footer>
   <p class="contagem" id="contagem" hidden>
     <span class="num" id="visitas"></span>
@@ -287,7 +319,7 @@
   </p>
   <span class="kana" aria-hidden="true">梅</span>
   Wagner Toshiro Umeda · São Paulo · 2026 · <a href="mailto:tosh2335@gmail.com">contato</a><br>
-  <a href="https://identidadeancestral.github.io/">Lei da Identidade Ancestral</a>
+  <a href="https://identidadeancestral.github.io/">Lei da Identidade Ancestral</a> · <a href="https://identidadeancestral.github.io/nominis/">NOMINIS · A Carta do Dia</a>
 </footer>
 
 <script>
