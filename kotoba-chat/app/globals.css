@@ -380,3 +380,134 @@ details p { padding-top:6px; font-size:14px; }
 .message-time { font-size:12px; }
 
 .scene-stage:not(.playing) span { animation-play-state:paused; }
+
+.learning-shortcuts { padding:0 24px 17px; display:grid; gap:10px; }
+.learning-shortcuts button { justify-content:flex-start; }
+.learning-shortcuts a { display:flex; align-items:center; gap:6px; font-size:14px; color:var(--muted-foreground); text-decoration:underline; text-underline-offset:3px; }
+.learning-shortcuts a svg { width:15px; flex:none; }
+.brand strong { font-size:31px; }
+.brand div>span { font-size:12px; letter-spacing:.07em; }
+.brand-mark { font-size:28px; }
+.story-composer { display:grid; gap:9px; }
+.story-composer [data-slot=select-trigger] { width:100%; height:auto; min-height:40px; text-align:left; }
+.story-composer [data-slot=select-value] { white-space:normal; }
+.story-draft { min-width:0; flex:1; }
+.story-draft>p { font-size:19px; line-height:1.7; overflow-wrap:anywhere; }
+.story-icon-order { display:flex; flex-wrap:wrap; gap:8px; font-size:26px; line-height:1.4; }
+.open-vocabulary { flex:none; }
+.open-vocabulary svg { width:17px; }
+.study-message-label { display:block; font-size:12px; letter-spacing:.08em; color:var(--muted-foreground); margin:8px 0; }
+.film-stage { height:188px; width:100%; position:relative; overflow:hidden; border-radius:14px; background:var(--secondary); isolation:isolate; }
+.film-stage>span { position:absolute; line-height:1.2; }
+.film-date { top:11px; left:13px; font-size:14px; color:var(--muted-foreground); }
+.film-person { left:12%; top:69px; font-size:43px; z-index:3; }
+.film-target { right:12%; top:65px; font-size:49px; z-index:4; }
+.film-bed { left:8%; top:93px; font-size:47px; z-index:2; }
+.film-action { left:35%; top:72px; font-size:30px; z-index:5; }
+.film-relation { left:48%; top:36px; font-size:21px; z-index:2; }
+.film-home { left:6%; top:30px; font-size:74px; opacity:.28; z-index:1; }
+.film-active-word { bottom:10px; left:12px; right:12px; text-align:center; font-size:21px; font-weight:600; }
+.film-expression { top:52px; left:calc(50% - 30px); font-size:60px; }
+.film-see .film-target { top:39px; }
+.film-awake .film-person { animation:film-wake 1.4s ease both; }
+.film-acting.film-see .film-action,.film-acting.film-what-see .film-action,.film-acting.film-read .film-action { animation:film-look 1.5s ease both; }
+.film-acting.film-drink .film-target { animation:film-drink 1.7s ease both; }
+.film-acting.film-drink .film-action { display:none; }
+.film-acting.film-eat .film-target { animation:film-eat 1.7s ease both; }
+.film-go .film-person { transform:scaleX(-1); }
+.film-acting.film-go .film-person { animation:film-walk 1.7s linear both; }
+.film-acting.film-like .film-action { animation:like 1.6s ease both; }
+.film-acting.film-where .film-action { animation:search-place 1.6s ease both; }
+.film-hello .film-expression,.film-no .film-expression { animation:wave 1.6s ease both; }
+.film-thanks .film-expression,.film-yes .film-expression { animation:bow 1.6s ease both; }
+.film-again .film-expression { animation:again 1.6s ease both; }
+.film-stage:not(.film-playing) span { animation-play-state:paused; }
+.film-sequence { display:flex; gap:4px; padding:8px 0 3px; flex-wrap:wrap; }
+.film-sequence button { display:grid; justify-items:center; gap:3px; border-radius:8px; padding:6px; min-width:36px; border:1px solid transparent; color:var(--muted-foreground); }
+.film-sequence button>span:first-child { font-size:19px; }
+.film-sequence button>span:last-child { font-size:14px; }
+.film-sequence button.current { background:var(--primary); color:var(--primary-foreground); border-color:var(--primary); }
+.film-sequence button.seen { background:var(--secondary); color:var(--foreground); }
+.film-sequence button:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+.film-buttons { display:flex; align-items:center; gap:3px; flex:none; }
+.film-buttons button { min-width:28px; }
+.film-buttons [data-size=icon] { width:28px; }
+.scene-controls { flex-wrap:wrap; font-size:12px; }
+@keyframes film-wake { from { transform:translateY(29px) rotate(-16deg); } to { transform:translateY(0) rotate(0); } }
+@keyframes film-look { from { transform:translateX(-25px); opacity:.3; } to { transform:translateX(35px); opacity:1; } }
+@keyframes film-drink { 0% { right:12%; transform:rotate(0); } 65% { right:63%; transform:rotate(0); } 85%,100% { right:65%; transform:rotate(-30deg); } }
+@keyframes film-eat { 0% { right:12%; transform:scale(1); } 65% { right:65%; transform:scale(.8); } 100% { right:69%; transform:scale(.15); opacity:.1; } }
+@keyframes film-walk { 0% { left:12%; transform:scaleX(-1) translateY(0); } 30% { transform:scaleX(-1) translateY(-5px); } 60% { transform:scaleX(-1) translateY(0); } 80% { transform:scaleX(-1) translateY(-4px); } 100% { left:61%; transform:scaleX(-1) translateY(0); } }
+.vocabulary-sheet { width:min(960px,100vw)!important; max-width:960px!important; gap:0; overflow:hidden; }
+.vocabulary-sheet [data-slot=sheet-header] { padding:25px 28px 20px; border-bottom:1px solid var(--border); }
+.vocabulary-sheet [data-slot=sheet-title] { display:flex; gap:10px; align-items:center; font-size:22px; }
+.vocabulary-sheet [data-slot=sheet-title] svg { width:22px; }
+.vocabulary-body { padding:22px 28px 32px; overflow-y:auto; min-height:0; }
+.vocabulary-tabs { width:100%; display:flex; height:auto; min-height:44px; }
+.vocabulary-tabs button { flex:1; gap:8px; font-size:14px; padding:9px; }
+.vocabulary-tabs button span { font-size:12px; opacity:.65; }
+.vocabulary-search { position:relative; margin:20px 0 10px; }
+.vocabulary-search input { padding-left:39px; height:44px; font-size:16px; }
+.vocabulary-search svg { width:18px; position:absolute; left:12px; top:13px; color:var(--muted-foreground); }
+.vocabulary-count { font-size:14px; color:var(--muted-foreground); margin-bottom:14px; }
+.vocabulary-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.vocabulary-grid button { display:flex; flex-direction:column; gap:7px; align-items:center; padding:15px 9px; border:1px solid var(--border); border-radius:13px; background:var(--background); text-align:center; transition:background .15s; min-width:0; }
+.vocabulary-grid button:hover,.vocabulary-grid button:focus-visible { background:var(--secondary); border-color:var(--primary); }
+.vocabulary-grid button>span { font-size:35px; line-height:1.2; }
+.vocabulary-grid strong { font-size:20px; font-weight:550; overflow-wrap:anywhere; }
+.vocabulary-grid small { font-size:14px; line-height:1.4; color:var(--muted-foreground); }
+.study-detail { padding-top:15px; }
+.study-word-heading { display:flex; align-items:center; gap:24px; margin:25px 0; }
+.study-illustration { font-size:75px; background:var(--secondary); border-radius:23px; width:130px; height:130px; display:grid; place-items:center; flex:none; }
+.study-word-heading h2 { font-size:39px; line-height:1.5; font-weight:550; overflow-wrap:anywhere; }
+.study-word-heading p { font-size:17px; color:var(--muted-foreground); }
+.study-group { font-size:14px; color:var(--primary); }
+.study-recall { padding:19px; background:var(--secondary); border-radius:14px; margin-bottom:24px; }
+.study-recall strong { font-size:23px; font-weight:550; }
+.study-recall p { font-size:16px; line-height:1.75; margin:8px 0 15px; }
+.study-detail h3 { font-size:18px; font-weight:600; margin-bottom:12px; }
+.conjugation-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.conjugation-grid button { display:flex; flex-direction:column; gap:6px; text-align:left; padding:15px; border:1px solid var(--border); border-radius:12px; min-width:0; }
+.conjugation-grid button.selected { background:var(--secondary); border-color:var(--primary); box-shadow:inset 0 0 0 1px var(--primary); }
+.conjugation-grid button>span { font-size:14px; color:var(--muted-foreground); line-height:1.4; }
+.conjugation-grid button strong { font-size:22px; font-weight:550; overflow-wrap:anywhere; line-height:1.6; }
+.conjugation-grid button small { font-size:14px; overflow-wrap:anywhere; }
+.study-note { color:var(--muted-foreground); font-size:14px; line-height:1.7; margin:14px 0; }
+.study-use { width:100%; height:auto; min-height:49px; flex-wrap:wrap; white-space:normal; margin-top:17px; }
+.study-use>span { font-size:19px; }
+.method-note { margin-top:27px; padding-top:20px; border-top:1px solid var(--border); font-size:14px; line-height:1.7; }
+.method-note summary { cursor:pointer; color:var(--primary); font-weight:550; }
+.method-note p { margin:12px 0; }
+.method-note a { display:flex; align-items:center; gap:7px; text-decoration:underline; color:var(--primary); }
+.method-note svg { width:15px; }
+@media(max-width:680px) {
+ .brand strong { font-size:30px; }
+ .vocabulary-sheet [data-slot=sheet-header] { padding:25px 20px 18px; }
+ .vocabulary-sheet [data-slot=sheet-title] { font-size:20px; }
+ .vocabulary-body { padding:18px 16px 30px; }
+ .vocabulary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+ .vocabulary-tabs button { padding:8px 5px; gap:5px; flex-wrap:wrap; }
+ .vocabulary-grid button { padding:12px 7px; }
+ .vocabulary-grid strong { font-size:19px; }
+ .conjugation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .conjugation-grid button { padding:12px; }
+ .conjugation-grid button strong { font-size:20px; }
+ .study-illustration { width:87px; height:100px; font-size:59px; }
+ .study-word-heading { gap:17px; }
+ .study-word-heading h2 { font-size:31px; }
+ .film-stage { height:166px; }
+ .film-active-word { bottom:8px; font-size:20px; }
+ .film-person { top:62px; }
+ .film-target { top:60px; font-size:42px; }
+ .film-action { top:65px; }
+ .film-bed { top:84px; }
+ .film-expression { top:42px; }
+ .composer-top { gap:5px; }
+ .composer-top [data-slot=tabs-trigger] { font-size:14px; gap:4px; padding:7px 8px; }
+ .composer-top [data-slot=tabs-trigger] svg { display:none; }
+ .story-draft>p { font-size:17px; }
+ .story-icon-order { font-size:22px; gap:7px; }
+ .practice-intro h2 { font-size:20px; }
+ .film-sequence button { padding:5px; }
+}
+@media(max-width:370px) { .vocabulary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .open-vocabulary { padding:6px; } .film-buttons button { font-size:12px; } }

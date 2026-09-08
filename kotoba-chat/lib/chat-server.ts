@@ -12,6 +12,14 @@ function payloadOf(raw:unknown):MessagePayload {
   if(!raw||typeof raw!=="object")return fail("invalid_message");
   const r=raw as Row;
   if(r.kind==="text") return {kind:"text",text:string(r.text,1,1500)};
+  if(r.kind==="word"||r.kind==="story") {
+    let value:MessagePayload;
+    if(r.kind==="word"&&typeof r.entry==="string"&&typeof r.form==="string")value={kind:"word",entry:r.entry,form:r.form};
+    else if(r.kind==="story"&&typeof r.story==="string")value={kind:"story",story:r.story};
+    else return fail("invalid_message");
+    try{compose(value);}catch{return fail("invalid_message");}
+    return value;
+  }
   if(r.kind!=="visual"||typeof r.template!=="string"||(r.question!==undefined&&typeof r.question!=="boolean"))return fail("invalid_message");
   const value:MessagePayload={kind:"visual",template:r.template,noun:typeof r.noun==="string"?r.noun:undefined,question:r.question===true};
   try{compose(value);}catch{return fail("invalid_message");}

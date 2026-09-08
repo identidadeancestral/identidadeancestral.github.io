@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kotoba — Japonês em imagens",
-  description: "Converse com pessoas, descubra o japonês por imagens e aprenda uma palavra de cada vez.",
+  title: "Ojiisan Chat — Japonês em cenas",
+  description: "Converse em japonês com imagens na ordem da frase, cenas animadas e 300 palavras com flexões.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

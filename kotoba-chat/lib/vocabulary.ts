@@ -1,5 +1,8 @@
+import { entryById } from "./study-data";
+import { formsFor, romanize, entryNote } from "./japanese";
+import { storyById } from "./stories";
 export type Lang = "pt" | "en";
-export type Word = { id:string; jp:string; kana:string; romaji:string; icon:string; pt:string; en:string; notePt?:string; noteEn?:string; grammar?:boolean };
+export type Word = { id:string; jp:string; kana:string; romaji:string; icon:string; pt:string; en:string; notePt?:string; noteEn?:string; grammar?:boolean; entryId?:string };
 const w = (id:string,jp:string,kana:string,romaji:string,icon:string,pt:string,en:string,notePt?:string,noteEn?:string,grammar=false):Word => ({id,jp,kana,romaji,icon,pt,en,notePt,noteEn,grammar});
 export const vocabulary: Word[] = [
   w("tree","木","き","ki","🌳","árvore","tree","Imagine os galhos nos traços de 木. Esta palavra se lê き; o kanji tem outras leituras em outras palavras.","Picture branches in 木. This word is read き; the kanji has other readings in other words."),
@@ -50,9 +53,23 @@ export const templates = [
   {id:"where",pt:"Onde fica…?",en:"Where is…?",choices:["station","school","park","house"],particle:"wa",ending:"where"},
 ];
 export type VisualPayload = {kind:"visual";template:string;noun?:string;question?:boolean};
-export type MessagePayload = VisualPayload | {kind:"text";text:string};
-export function compose(payload:MessagePayload): {japanese:string;tokens:string[];pt:string;en:string;romaji:string} {
+export type MessagePayload = VisualPayload | {kind:"text";text:string} | {kind:"word";entry:string;form:string} | {kind:"story";story:string};
+export function compose(payload:MessagePayload): {japanese:string;tokens:string[];pt:string;en:string;romaji:string;words?:Word[]} {
   if(payload.kind==="text") return {japanese:payload.text,tokens:[],pt:"",en:"",romaji:""};
+  if(payload.kind==="word") {
+    const entry=Object.hasOwn(entryById,payload.entry)?entryById[payload.entry]:undefined;
+    if(!entry)throw new Error("invalid_message");
+    const form=formsFor(entry).find(f=>f.id===payload.form);
+    if(!form)throw new Error("invalid_message");
+    const word:Word={id:entry.id+":"+form.id,entryId:entry.id,jp:form.jp,kana:form.kana,romaji:romanize(form.kana),icon:entry.icon,pt:entry.pt,en:entry.en,notePt:entryNote(entry,"pt"),noteEn:entryNote(entry,"en")};
+    return {japanese:form.jp,tokens:[word.id],pt:entry.pt+" · "+form.pt,en:entry.en+" · "+form.en,romaji:word.romaji,words:[word]};
+  }
+  if(payload.kind==="story") {
+    const story=Object.hasOwn(storyById,payload.story)?storyById[payload.story]:undefined;
+    if(!story)throw new Error("invalid_message");
+    const words=story.words.map(w=>({...w,romaji:romanize(w.kana),notePt:story.notePt,noteEn:story.noteEn}));
+    return {japanese:story.jp,tokens:words.map(w=>w.id),pt:story.pt,en:story.en,romaji:words.map(w=>w.romaji).join(" "),words};
+  }
   let ids:string[]=[]; let pt="",en="";
   if(["hello","thanks","yes","no","again"].includes(payload.template)) {
     const w=lexicon[payload.template];ids=[w.id];pt=w.pt;en=w.en;
@@ -72,4 +89,5 @@ export function compose(payload:MessagePayload): {japanese:string;tokens:string[
   }
   return {japanese:ids.map(id=>lexicon[id].jp).join("")+"。",tokens:ids,pt,en,romaji:ids.map(id=>lexicon[id].romaji).join(" ")};
 }
+export function sentenceWords(payload:MessagePayload):Word[] {const c=compose(payload);return c.words||c.tokens.map(id=>lexicon[id]);}
 export const avatars=["🌱","🌸","🍵","🌙","🦊","🐈","🐼","⛰️"];

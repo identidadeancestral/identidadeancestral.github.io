@@ -7,12 +7,15 @@ import {join} from "node:path";
 import ts from "typescript";
 
 const temporary=await mkdtemp(join(tmpdir(),"kotoba-test-"));
-for(const name of ["vocabulary","chat-server"]) {
-  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace('"./vocabulary"','"./vocabulary.mjs"');
+for(const name of ["study-data","japanese","stories","vocabulary","chat-server"]) {
+  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data)"/g,'"./$1.mjs"');
   await writeFile(join(temporary,name+".mjs"),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
 }
 const {handleChat}=await import(join(temporary,"chat-server.mjs"));
 const {compose,templates}=await import(join(temporary,"vocabulary.mjs"));
+const {entries,entryById}=await import(join(temporary,"study-data.mjs"));
+const {formsFor,romanize}=await import(join(temporary,"japanese.mjs"));
+const {stories}=await import(join(temporary,"stories.mjs"));
 const sql=new DatabaseSync(":memory:");
 sql.exec("PRAGMA foreign_keys=ON");
 for(const file of (await readdir(new URL("../drizzle/",import.meta.url))).filter(f=>f.endsWith(".sql")).sort())sql.exec(await readFile(new URL("../drizzle/"+file,import.meta.url),"utf8"));
@@ -93,5 +96,34 @@ test("message history survives independent request sessions and cursor paginatio
   assert.ok(previous.messages.length>0);assert.ok(previous.messages.at(-1).id<first.messages[0].id);
   const after=(await request("auth-b",null,"?room="+dm+"&after="+first.messages.at(-1).id)).data;
   assert.equal(after.messages.length,0);
+});
+test("300 distinct vocabulary entries and valid forms for every entry",()=>{
+  assert.equal(entries.length,300);assert.equal(new Set(entries.map(e=>e.id)).size,300);
+  for(const category of ["verb","noun","adjective"])assert.equal(entries.filter(e=>e.category===category).length,100);
+  for(const e of entries){assert.ok(e.jp&&e.kana&&e.pt&&e.en&&e.icon);assert.equal(formsFor(e).length,e.category==="verb"?9:e.category==="adjective"?7:1);for(const f of formsFor(e)){const sentence=compose({kind:"word",entry:e.id,form:f.id});assert.equal(sentence.japanese,f.jp);assert.ok(!/[ぁ-ゖァ-ヺ]/u.test(sentence.romaji),sentence.romaji);}}
+});
+test("Japanese verb groups, irregular forms and adjective distinctions",()=>{
+ const form=(id,key)=>formsFor(entryById[id]).find(f=>f.id===key);
+ for(const [id,key,jp,kana] of [
+  ["verb:go","te","行って","いって"],["verb:go","plainPast","行った","いった"],
+  ["verb:return","polite","帰ります","かえります"],["verb:wear","polite","着ます","きます"],["verb:cut","polite","切ります","きります"],
+  ["verb:come","plainNegative","来ない","こない"],["verb:come","past","来ました","きました"],
+  ["verb:study","te","勉強して","べんきょうして"],["verb:swim","te","泳いで","およいで"],
+  ["verb:play","plainPast","遊んだ","あそんだ"],["verb:buy","plainNegative","買わない","かわない"],
+  ["verb:exist-object","plainNegative","ない","ない"],["verb:exist-object","plainPastNegative","なかった","なかった"],
+  ["verb:need","polite","要ります","いります"],["verb:exist-living","polite","います","います"],
+  ["adjective:good","past","よかったです","よかったです"],["adjective:good","negative","よくないです","よくないです"],
+  ["adjective:beautiful","adnominal","きれいな","きれいな"],["adjective:dislike","past","嫌いでした","きらいでした"]
+ ]){assert.equal(form(id,key).jp,jp);assert.equal(form(id,key).kana,kana);}
+ assert.equal(romanize("がっこう"),"gakkou");assert.equal(romanize("おじいさん"),"ojiisan");assert.equal(romanize("コーヒー"),"koohii");assert.equal(romanize("きっぷ"),"kippu");
+});
+test("scene order reconstructs Japanese, and new messages are server-validated",async()=>{
+ for(const story of stories){const c=compose({kind:"story",story:story.id});assert.equal(c.words.map(w=>w.jp).join(""),story.jp.replace(/[、。]/g,""));}
+ assert.deepEqual(compose({kind:"story",story:"today-sun"}).words.map(w=>w.jp),["今日","起きて","太陽","を","見ました"]);
+ for(const payload of [{kind:"story",story:"today-sun"},{kind:"word",entry:"verb:come",form:"plainNegative"}]){
+  const sent=await request("auth-b",{action:"send",roomId:dm,clientId:crypto.randomUUID(),payload,japanese:"ignored"});assert.equal(sent.status,200);
+  const got=(await request("auth-a",null,"?room="+dm)).data.messages.at(-1);assert.equal(got.japanese,compose(payload).japanese);assert.deepEqual(got.payload,payload);
+ }
+ for(const payload of [{kind:"story",story:"invented"},{kind:"word",entry:"verb:come",form:"invented"},{kind:"word",entry:"noun:tree",form:"past"},{kind:"word",entry:"__proto__",form:"dictionary"}])assert.equal((await request("auth-b",{action:"send",roomId:dm,clientId:crypto.randomUUID(),payload})).status,400);
 });
 test.after(async()=>{sql.close();await rm(temporary,{recursive:true,force:true});});
