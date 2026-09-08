@@ -1,8 +1,9 @@
 // Original vocabulary selection for Ojiisan Chat. Images are mnemonic cues,
 // not etymologies or one-to-one translations of kanji.
-export type Category = "verb" | "noun" | "adjective";
-export type Group = "godan" | "ichidan" | "suru" | "kuru" | "i" | "na" | "noun";
-export type Entry = { id:string; category:Category; jp:string; kana:string; pt:string; en:string; icon:string; group:Group };
+import { adverbs } from "./adverb-data";
+export type Category = "verb" | "noun" | "adjective" | "adverb";
+export type Group = "godan" | "ichidan" | "suru" | "kuru" | "i" | "na" | "noun" | "adverb";
+export type Entry = { id:string; category:Category; jp:string; kana:string; pt:string; en:string; icon:string; group:Group; example?:{jp:string;kana:string;pt:string;en:string}; notePt?:string; noteEn?:string };
 function rows(category:Category,source:string):Entry[] {
   return source.trim().split("\n").map(line=>{
     const [id,jp,kana,pt,en,icon,group]=line.split("|");
@@ -315,5 +316,6 @@ enthusiastic|熱心|ねっしん|dedicado / entusiasmado|enthusiastic / devoted|
 sincere|誠実|せいじつ|sincero / íntegro|sincere|🤝|na
 peaceful|平和|へいわ|pacífico|peaceful|☮️|na
 `);
-export const entries:Entry[]=[...verbs,...nouns,...adjectives].map(e=>({...e,id:e.category+":"+e.id}));
+export const entries:Entry[]=[...verbs,...adverbs,...adjectives,...nouns].map(e=>({...e,id:e.category+":"+e.id}));
+export const categoryCounts=Object.fromEntries((["verb","adverb","adjective","noun"] as const).map(category=>[category,entries.filter(e=>e.category===category).length])) as Record<Category,number>;
 export const entryById=Object.fromEntries(entries.map(e=>[e.id,e])) as Record<string,Entry>;

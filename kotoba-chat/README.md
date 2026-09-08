@@ -1,6 +1,6 @@
 # Ojiisan Chat — Japonês em blocos
 
-Chat para aprender japonês com outras pessoas, baseado no Método 100 Blocos de Wagner Toshiro Umeda. A mensagem é escrita em peças com função identificada; os verbos, substantivos, partículas e adjetivos usam cores e rótulos distintos. A explicação mostra como o molde foi preenchido.
+Chat para aprender japonês com outras pessoas, baseado no Método 100 Blocos de Wagner Toshiro Umeda. A mensagem é escrita em peças com função identificada; os verbos, substantivos, partículas, advérbios e adjetivos usam cores e rótulos distintos. A explicação mostra como o molde foi preenchido.
 
 ## Funciona nesta versão
 
@@ -19,7 +19,9 @@ Chat para aprender japonês com outras pessoas, baseado no Método 100 Blocos de
 - Teclado de palavras com frases selecionadas e texto livre sem tradução automática.
 - Imagens desligadas por padrão no catálogo; pistas visuais opcionais nas quatro histórias, com pausa e movimento reduzido.
 - Quatro frases narrativas, incluindo 今日、起きて、太陽を見ました。 (“Hoje acordei e olhei o sol”), com destaque e avanço por bloco.
-- Catálogo pesquisável de exatamente 100 verbos, 100 substantivos e 100 adjetivos, todos com figura, kana e significados em português e inglês.
+- Catálogo pesquisável de exatamente 100 verbos, 100 advérbios, 100 adjetivos e 100 substantivos (400 palavras), com kana e significados em português e inglês.
+- Os 100 advérbios têm exemplos próprios com leitura e tradução; não recebem flexões verbais. Algumas entradas também têm uso nominal ou adjetival, identificado nas notas quando relevante.
+- Advérbios opcionais em combinações selecionadas dos moldes: frequência no presente polido e intensidade com 好きです. Os demais continuam disponíveis como palavras de estudo, com seus exemplos.
 - Nove formas para cada verbo: dicionário, polida, negativa polida, passado polido, passado negativo polido, negativa simples, passado simples, passado negativo simples e forma て.
 - Sete formas de adjetivos, distinguindo い e な, incluindo uso antes de substantivos. Grupos de verbos explícitos e exceções como 行く, 来る, ある e いい.
 - Envio de palavras nas formas selecionadas como cartões de estudo; leitura sem tradução para recuperação ativa.
@@ -61,16 +63,18 @@ As sessões da interface GitHub expiram em oito horas e são revogadas ao sair. 
 - Não há criptografia de ponta a ponta, tradução automática, áudio de falantes nativos nem conversão ilimitada de japonês livre para cenas.
 - As animações usam símbolos emoji do aparelho, que podem variar visualmente. Cada animação corresponde a uma das estruturas de frase selecionadas.
 - A passagem entre quadros acompanha a escrita japonesa. Partículas mostram relações e não são tratadas como eventos físicos. Os quatro roteiros atuais são passados; a forma て inicial liga as ações.
-- Palavras avulsas e flexões são cartões didáticos. Os dez moldes permitem substituições de um vocabulário compatível selecionado; não prometem aceitar qualquer combinação das 300 entradas. Há palavras auxiliares dos moldes fora do catálogo de 300.
+- Palavras avulsas e flexões são cartões didáticos. Os dez moldes permitem substituições de um vocabulário compatível selecionado; não prometem aceitar qualquer combinação das 400 entradas. Há palavras auxiliares dos moldes fora do catálogo de 400.
 - O roteiro demonstra uma troca possível com essa base. Não comprova fluência, eficácia clínica ou memorização permanente. As revisões são uma adaptação prática; não reproduzem integralmente o calendário D+0 até D+180 do livro.
 - As revisões são uma agenda simples por autoavaliação: “Preciso rever” agenda dez minutos; “Lembrei” progride por um, três, sete, 21 e 60 dias. Repetir “Lembrei” antes do prazo não pula etapas. Não há avaliação automática de pronúncia nem promessa de memorização permanente.
 - O espaço de prática é temporário. Idioma e modo de leitura são preferências locais. Conversas reais e revisões ficam no banco; o token de sessão do GitHub fica apenas nesta aba.
 - Figuras e símbolos de partículas são pistas didáticas. Kanji podem ter várias leituras; hiragana representa sons. A função de uma partícula depende da construção.
 
-Os testes usam quatro perfis sintéticos e SQLite real para verificar aceite, autorização, bloqueio, persistência, deduplicação de envio e paginação. Também verificam as 300 entradas, as flexões, exceções, a ordem dos roteiros e a validação de novas mensagens. Um teste adicional usa dois perfis sintéticos, aceite de convite e troca do roteiro em SQLite, verificando as frases reconstruídas pelo servidor. Os moldes, papéis gramaticais, flexões e rejeição de combinações incompatíveis também são verificados. Os testes também verificam o vínculo PKCE, uso único e expiração dos códigos, revogação de sessões, restrição de origem e separação do progresso por usuário. Não criam usuários ou mensagens na publicação. A compilação e esses testes não substituem uma verificação interativa de login em cada navegador.
+Os testes usam quatro perfis sintéticos e SQLite real para verificar aceite, autorização, bloqueio, persistência, deduplicação de envio e paginação. Também verificam as 400 entradas, as flexões, exceções, a ordem dos roteiros e a validação de novas mensagens. Um teste adicional usa dois perfis sintéticos, aceite de convite e troca do roteiro em SQLite, verificando as frases reconstruídas pelo servidor. Os moldes, papéis gramaticais, flexões e rejeição de combinações incompatíveis também são verificados. Os testes também verificam o vínculo PKCE, uso único e expiração dos códigos, revogação de sessões, restrição de origem e separação do progresso por usuário. Não criam usuários ou mensagens na publicação. A compilação e esses testes não substituem uma verificação interativa de login em cada navegador.
 
 ## Referências pedagógicas
 
 A estrutura de treino aproveita as ideias do ebook do autor (v1, 175 páginas): arquitetura em blocos (pp. 6–11), verbos-motor (pp. 33–38), histórias de kana (pp. 55–56) e recuperação com revisão (pp. 167–170). O PDF pago não é distribuído neste repositório. A edição em blocos usa a anatomia de molde (p. 79), a seleção identificada dos blocos nas pp. 82–119 e as expressões de conversa (pp. 156–159). O vocabulário adicional e as histórias foram escritos para o app; o ebook completo e sua versão integral dos 100 blocos não são distribuídos. As cores por função são uma convenção do app.
 
 As regras foram conferidas com as [notas gramaticais Irodori, Japan Foundation](https://www.irodori.jpf.go.jp/assets/data/Grammar_all.pdf), incluindo as tabelas de [forma て](https://www.irodori.jpf.go.jp/assets/data/elementary01/pdf/Y_L01.pdf) e [passado simples](https://www.irodori.jpf.go.jp/assets/data/elementary01/pdf/Y_L08.pdf). Trata-se de uma seleção de vocabulário para expansão, sem alegação de corresponder integralmente a um nível JLPT.
+
+A expansão de advérbios usa exemplos originais. A frequência, a ordem variável antes do verbo e os padrões negativos foram conferidos nas notas Irodori da Japan Foundation, pp. 13 e 33–35 do PDF citado acima. As seleções de combinação dos moldes são limitadas para preservar o sentido; não há conversão livre de qualquer sequência de palavras em uma frase correta. O endereço público principal e canônico é https://identidadeancestral.github.io/ojiisan-chat/.

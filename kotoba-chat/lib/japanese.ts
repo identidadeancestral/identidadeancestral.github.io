@@ -21,7 +21,7 @@ function verbParts(value:string,entry:Entry,reading:boolean) {
 }
 export function formsFor(entry:Entry):Form[] {
  const form=(id:string,jp:string,kana:string):Form=>({id,jp,kana,pt:labels[id][0],en:labels[id][1]});
- if(entry.category==="noun")return [form("dictionary",entry.jp,entry.kana)];
+ if(entry.category==="noun"||entry.category==="adverb")return [form("dictionary",entry.jp,entry.kana)];
  if(entry.category==="adjective") {
    const values=(text:string)=>{
      if(entry.group==="na")return [text,text+"です",text+"ではありません",text+"でした",text+"ではありませんでした",text+"な",text+"で"];
@@ -55,6 +55,7 @@ export function romanize(source:string) {
  return out;
 }
 export function entryNote(entry:Entry,lang:"pt"|"en") {
+ if(entry.category==="adverb")return (lang==="pt"?entry.notePt:entry.noteEn)||(lang==="pt"?"Observe o que o advérbio acrescenta no exemplo: frequência, tempo, modo ou intensidade. Use esta forma; ela não recebe as terminações dos verbos.":"Notice what the adverb adds in the example: frequency, time, manner or degree. Use this form; it does not take verb endings.");
  const notes:Record<string,[string,string]>={
   "verb:return":["帰る é godan: 帰ります・帰って. O final -eru, sozinho, não determina o grupo.","帰る is godan: 帰ります・帰って. An -eru ending alone does not determine the group."],
   "verb:go":["Exceção na forma て e no passado: 行って・行った.","Exception in the て form and plain past: 行って・行った."],

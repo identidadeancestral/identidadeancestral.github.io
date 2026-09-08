@@ -76,7 +76,7 @@ export default function OjiisanApp(access:AccessProps) {
     </>}
     {feedback&&<p className="lesson-feedback" role="status">{feedback}</p>}
    </section>
-   <div className="lesson-next"><Button variant="outline" disabled={!valid} onClick={()=>goChat(payload)}><MessageCircle/>{t("Usar minha frase numa conversa","Use my sentence in a conversation")}</Button><Button variant="ghost" onClick={()=>setLibrary(true)}><BookOpen/>{t("Explorar as 300 palavras","Explore the 300 words")}</Button></div>
+   <div className="lesson-next"><Button variant="outline" disabled={!valid} onClick={()=>goChat(payload)}><MessageCircle/>{t("Usar minha frase numa conversa","Use my sentence in a conversation")}</Button><Button variant="ghost" onClick={()=>setLibrary(true)}><BookOpen/>{t("Explorar as 400 palavras","Explore the 400 words")}</Button></div>
    <footer className="learning-footer"><a href={EBOOK_URL} target="_blank" rel="noopener noreferrer">{t("O método completo no ebook","The full method in the ebook")}<ChevronRight/></a><span>Wagner Toshiro Umeda</span><p>{t("10 moldes iniciais dos 100 blocos do livro. As cores são uma ajuda criada para o app.","10 starting patterns from the book's 100 blocks. Colors are an aid created for the app.")}</p></footer>
   </main>}
   {chatVisited&&<div hidden={view!=="chat"} className="simple-chat"><ChatApp {...access} langOverride={lang} composeSeed={seed} profileRequest={profileRequest}/></div>}

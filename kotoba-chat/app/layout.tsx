@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Ojiisan Chat — Japonês em blocos",
   description: "Monte frases com o Método 100 Blocos. Verbos, palavras e partículas por função, explicações das mensagens e conversas em japonês.",
+  alternates: { canonical: "https://identidadeancestral.github.io/ojiisan-chat/" },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

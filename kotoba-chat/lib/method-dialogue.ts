@@ -1,4 +1,4 @@
-import { defaultBlocks, type BlocksPayload } from "./method-blocks";
+import { defaultBlocks, methodAdverbChoices, type BlocksPayload } from "./method-blocks";
 import type { MessagePayload } from "./vocabulary";
 const b=(pattern:string,patch:Partial<BlocksPayload>={}):BlocksPayload=>({...defaultBlocks(pattern),...patch});
 // Authored teaching script. These are examples, never simulated online users.
@@ -21,5 +21,5 @@ export function suggestedReplies(payload:MessagePayload):BlocksPayload[] {
  const past=payload.form==="past"||payload.form==="pastNegative";
  // The past-only teaching pattern has no negative slot.
  if(payload.pattern==="past")return [answer];
- return [{...answer,form:past?"past":"polite"},{...answer,form:past?"pastNegative":"negative"}];
+ return [{...answer,form:past?"past":"polite"},{...answer,form:past?"pastNegative":"negative"}].map(reply=>{if(reply.adverb&&!methodAdverbChoices(reply).includes(reply.adverb))delete reply.adverb;return reply;});
 }

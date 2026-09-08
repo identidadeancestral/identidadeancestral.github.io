@@ -7,8 +7,8 @@ import {join} from "node:path";
 import ts from "typescript";
 
 const temporary=await mkdtemp(join(tmpdir(),"kotoba-test-"));
-for(const name of ["study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server","method-blocks","block-analysis","method-dialogue"]) {
-  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server|method-blocks|block-analysis|method-dialogue)"/g,'"./$1.mjs"');
+for(const name of ["adverb-data","study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server","method-blocks","block-analysis","method-dialogue"]) {
+  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(adverb-data|vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server|method-blocks|block-analysis|method-dialogue)"/g,'"./$1.mjs"');
   await writeFile(join(temporary,name+".mjs"),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
 }
 const {handleChat}=await import(join(temporary,"chat-server.mjs"));
@@ -103,10 +103,29 @@ test("message history survives independent request sessions and cursor paginatio
   const after=(await request("auth-b",null,"?room="+dm+"&after="+first.messages.at(-1).id)).data;
   assert.equal(after.messages.length,0);
 });
-test("300 distinct vocabulary entries and valid forms for every entry",()=>{
-  assert.equal(entries.length,300);assert.equal(new Set(entries.map(e=>e.id)).size,300);
-  for(const category of ["verb","noun","adjective"])assert.equal(entries.filter(e=>e.category===category).length,100);
-  for(const e of entries){assert.ok(e.jp&&e.kana&&e.pt&&e.en&&e.icon);assert.equal(formsFor(e).length,e.category==="verb"?9:e.category==="adjective"?7:1);for(const f of formsFor(e)){const sentence=compose({kind:"word",entry:e.id,form:f.id});assert.equal(sentence.japanese,f.jp);assert.ok(!/[ぁ-ゖァ-ヺ]/u.test(sentence.romaji),sentence.romaji);}}
+test("400 distinct vocabulary entries and valid forms for every entry",()=>{
+  assert.equal(entries.length,400);assert.equal(new Set(entries.map(e=>e.id)).size,400);
+  for(const category of ["verb","noun","adjective","adverb"])assert.equal(entries.filter(e=>e.category===category).length,100);
+  for(const e of entries.filter(e=>e.category==="adverb")){assert.ok(e.example?.jp.includes(e.jp),e.id);assert.ok(e.example.kana&&e.example.pt&&e.example.en,e.id);}
+  for(const e of entries){assert.ok(e.jp&&e.kana&&e.pt&&e.en&&(e.icon||e.category==="adverb"));assert.equal(formsFor(e).length,e.category==="verb"?9:e.category==="adjective"?7:1);for(const f of formsFor(e)){const sentence=compose({kind:"word",entry:e.id,form:f.id});assert.equal(sentence.japanese,f.jp);assert.ok(!/[ぁ-ゖァ-ヺ]/u.test(sentence.romaji),sentence.romaji);}}
+});
+test("adverbs keep their form and extend compatible patterns with the right meaning",()=>{
+ const frequent={...defaultBlocks("consume"),adverb:"sometimes"};
+ assert.equal(compose(frequent).japanese,"コーヒーを時々飲みます。");
+ assert.equal(compose(frequent).pt,"Às vezes, bebo café.");
+ assert.equal(compose(frequent).en,"I sometimes drink coffee.");
+ assert.equal(blockWords(frequent).find(w=>w.jp==="時々").role,"adverb");
+ const question={...frequent,question:true,topic:false};
+ assert.equal(compose(question).en,"Do you sometimes drink coffee?");
+ const replies=suggestedReplies(question);assert.equal(replies.length,2);
+ assert.equal(compose(replies[1]).japanese,"コーヒーを飲みません。");
+ const like={...defaultBlocks("like"),adverb:"very"};
+ assert.equal(compose(like).japanese,"コーヒーがとても好きです。");
+ assert.equal(compose(like).pt,"Gosto muito de café.");
+ assert.equal(compose(like).en,"I really like coffee.");
+ for(const invalid of [{...frequent,form:"negative"},{...frequent,adverb:"very"},{...like,adverb:"always"},{...frequent,adverb:"__proto__"}])assert.throws(()=>compose(invalid),/invalid_message/);
+ assert.equal(compose({kind:"word",entry:"adverb:slowly",form:"dictionary"}).japanese,"ゆっくり");
+ assert.throws(()=>compose({kind:"word",entry:"adverb:slowly",form:"past"}),/invalid_message/);
 });
 test("Japanese verb groups, irregular forms and adjective distinctions",()=>{
  const form=(id,key)=>formsFor(entryById[id]).find(f=>f.id===key);
@@ -126,7 +145,7 @@ test("Japanese verb groups, irregular forms and adjective distinctions",()=>{
 test("scene order reconstructs Japanese, and new messages are server-validated",async()=>{
  for(const story of stories){const c=compose({kind:"story",story:story.id});assert.equal(c.words.map(w=>w.jp).join(""),story.jp.replace(/[、。]/g,""));}
  assert.deepEqual(compose({kind:"story",story:"today-sun"}).words.map(w=>w.jp),["今日","起きて","太陽","を","見ました"]);
- for(const payload of [{kind:"story",story:"today-sun"},{kind:"word",entry:"verb:come",form:"plainNegative"}]){
+ for(const payload of [{kind:"story",story:"today-sun"},{kind:"word",entry:"verb:come",form:"plainNegative"},{kind:"word",entry:"adverb:not-much",form:"dictionary"}]){
   const sent=await request("auth-b",{action:"send",roomId:dm,clientId:crypto.randomUUID(),payload,japanese:"ignored"});assert.equal(sent.status,200);
   const got=(await request("auth-a",null,"?room="+dm)).data.messages.at(-1);assert.equal(got.japanese,compose(payload).japanese);assert.deepEqual(got.payload,payload);
  }

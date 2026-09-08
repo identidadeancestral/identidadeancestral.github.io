@@ -5,7 +5,7 @@ import { blockWords, blockLabel, messageExplanation } from "@/lib/block-analysis
 import { roleNames } from "@/lib/method-blocks";
 
 export function BlockLegend({lang}:{lang:Lang}) {
- return <div className="block-legend" aria-label={lang==="pt"?"Cores e funções dos blocos":"Block colors and roles"}>{(["noun","particle","verb","adjective"] as const).map(role=><span className={"role-"+role} key={role}>{roleNames[role][lang==="pt"?0:1]}</span>)}</div>;
+ return <div className="block-legend" aria-label={lang==="pt"?"Cores e funções dos blocos":"Block colors and roles"}>{(["noun","particle","verb","adverb","adjective"] as const).map(role=><span className={"role-"+role} key={role}>{roleNames[role][lang==="pt"?0:1]}</span>)}</div>;
 }
 export default function MessageBlocks({payload,lang,reading=false,plain=false,onWord}:{payload:MessagePayload;lang:Lang;reading?:boolean;plain?:boolean;onWord?:(w:Word)=>void}) {
  const [selected,setSelected]=useState<Word|null>(null),signature=JSON.stringify(payload);

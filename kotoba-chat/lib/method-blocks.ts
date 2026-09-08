@@ -2,9 +2,9 @@ import { entryById } from "./study-data";
 import { formsFor, romanize } from "./japanese";
 import type { Word } from "./vocabulary";
 
-export type BlockRole="topic"|"context"|"noun"|"particle"|"verb"|"adjective"|"expression";
-export type BlocksPayload={kind:"blocks";pattern:string;slot?:string;verb?:string;place?:string;form?:string;question?:boolean;topic?:boolean;name?:string};
-export const roleNames:Record<BlockRole,[string,string]>={topic:["tema","topic"],context:["contexto","context"],noun:["substantivo","noun"],particle:["partícula","particle"],verb:["verbo","verb"],adjective:["adjetivo","adjective"],expression:["expressão","expression"]};
+export type BlockRole="topic"|"context"|"noun"|"particle"|"verb"|"adjective"|"adverb"|"expression";
+export type BlocksPayload={kind:"blocks";pattern:string;slot?:string;verb?:string;place?:string;form?:string;question?:boolean;topic?:boolean;name?:string;adverb?:string};
+export const roleNames:Record<BlockRole,[string,string]>={topic:["tema","topic"],context:["contexto","context"],noun:["substantivo","noun"],particle:["partícula","particle"],verb:["verbo","verb"],adjective:["adjetivo","adjective"],adverb:["advérbio","adverb"],expression:["expressão","expression"]};
 export const methodPatterns=[
  {id:"activity",number:1,page:82,pt:"Fazer uma atividade",en:"Do an activity",formula:"[atividade] を します",verbs:["do"]},
  {id:"consume",number:2,page:83,pt:"Comer e beber",en:"Eat and drink",formula:"[objeto] を [verbo]",verbs:["drink","eat"]},
@@ -47,13 +47,20 @@ export function defaultBlocks(pattern="location"):BlocksPayload {
 }
 export const hasForm=(p:string)=>["activity","consume","go","location"].includes(p);
 export const hasQuestion=(p:string)=>["activity","consume","go","location","like","past"].includes(p);
+// Deliberately selected combinations for the initial patterns. All 100 adverbs
+// remain available as study words with their own examples in the catalogue.
+export function methodAdverbChoices(p:BlocksPayload):string[] {
+ if(p.pattern==="like")return ["very","quite"];
+ if(hasForm(p.pattern)&&(!p.form||p.form==="polite"))return ["always","often","sometimes","usually","occasionally"];
+ return [];
+}
 export function canonicalBlocks(raw:unknown):BlocksPayload {
  if(!raw||typeof raw!=="object")throw new Error("invalid_message");
  const r=raw as Record<string,unknown>;
  if(r.kind!=="blocks"||typeof r.pattern!=="string"||!Object.hasOwn(patternById,r.pattern))throw new Error("invalid_message");
- for(const k of ["slot","verb","place","form","name"])if(r[k]!==undefined&&(typeof r[k]!=="string"||(r[k] as string).length>40))throw new Error("invalid_message");
+ for(const k of ["slot","verb","place","form","name","adverb"])if(r[k]!==undefined&&(typeof r[k]!=="string"||(r[k] as string).length>40))throw new Error("invalid_message");
  for(const k of ["question","topic"])if(r[k]!==undefined&&typeof r[k]!=="boolean")throw new Error("invalid_message");
- const d=defaultBlocks(r.pattern),p={...d,...Object.fromEntries(["slot","verb","place","form","name","question","topic"].filter(k=>r[k]!==undefined).map(k=>[k,r[k]]))} as BlocksPayload;
+ const d=defaultBlocks(r.pattern),p={...d,...Object.fromEntries(["slot","verb","place","form","name","question","topic","adverb"].filter(k=>r[k]!==undefined).map(k=>[k,r[k]]))} as BlocksPayload;
  const pattern=patternById[p.pattern];
  if(pattern.verbs.length&&!(pattern.verbs as readonly string[]).includes(p.verb!))throw new Error("invalid_message");
  const choices=methodChoices(p.pattern,p.verb);
@@ -64,7 +71,8 @@ export function canonicalBlocks(raw:unknown):BlocksPayload {
  if(p.question&&(!hasQuestion(p.pattern)||p.topic))throw new Error("invalid_message");
  if(p.topic&&!hasQuestion(p.pattern))throw new Error("invalid_message");
  if(p.pattern==="introduce"&&(!p.name?.trim()||/[\u0000-\u001f\u007f<>]/u.test(p.name)))throw new Error("invalid_message");
- return {kind:"blocks",pattern:p.pattern,...(pattern.verbs.length?{verb:p.verb}:{}),...(choices.length?{slot:p.slot}:{}),...(p.pattern==="location"?{place:p.place}:{}),...(hasForm(p.pattern)||p.pattern==="past"?{form:p.form}:{}),...(hasQuestion(p.pattern)?{question:!!p.question,topic:!!p.topic}:{}),...(p.pattern==="introduce"?{name:p.name!.trim()}: {})};
+ if(p.adverb!==undefined&&!methodAdverbChoices(p).includes(p.adverb))throw new Error("invalid_message");
+ return {kind:"blocks",pattern:p.pattern,...(pattern.verbs.length?{verb:p.verb}:{}),...(choices.length?{slot:p.slot}:{}),...(p.pattern==="location"?{place:p.place}:{}),...(hasForm(p.pattern)||p.pattern==="past"?{form:p.form}:{}),...(hasQuestion(p.pattern)?{question:!!p.question,topic:!!p.topic}:{}),...(p.pattern==="introduce"?{name:p.name!.trim()}: {}),...(p.adverb?{adverb:p.adverb}:{})};
 }
 function word(id:string,jp:string,kana:string,pt:string,en:string,role:BlockRole,notePt=pt,noteEn=en):Word {return {id,jp,kana,romaji:romanize(kana),pt,en,role,notePt,noteEn,icon:"",grammar:role==="particle"};}
 function particle(jp:string,pt:string,en:string) {return word("particle:"+jp,jp,jp==="は"?"わ":jp==="を"?"お":jp,pt,en,"particle",pt,en);}
@@ -138,6 +146,21 @@ export function composeBlocks(raw:BlocksPayload) {
  if(q){explainPt+=" か vem depois do predicado.";explainEn+=" か comes after the predicate.";}
  if(p.pattern==="past"){explainPt+=" 昨日 acrescenta o contexto de ontem, do bloco 63 (PDF p. 119).";explainEn+=" 昨日 adds yesterday's context, from block 63 (PDF p. 119).";}
  if(hasForm(p.pattern)||p.pattern==="past"){explainPt+=" Sem tempo explícito, ます pode indicar hábito ou futuro; ました indica passado.";explainEn+=" Without an explicit time, ます can mean habit or future; ました indicates past.";}
+ if(p.adverb){
+  const a=entryById["adverb:"+p.adverb],index=words.findIndex(w=>w.role==="verb"||w.role==="adjective");
+  words.splice(index,0,{...word(a.id,a.jp,a.kana,a.pt,a.en,"adverb"),entryId:a.id});
+  if(p.pattern==="like"){
+   pt=pt.replace(/gost[ao]/i,s=>s+" "+(p.adverb==="very"?"muito":"bastante"));
+   en=en.replace("like ",(p.adverb==="very"?"really":"quite")+" like ");
+  } else {
+   const frequency:Record<string,[string,string]>={always:["sempre","always"],often:["com frequência","often"],sometimes:["às vezes","sometimes"],usually:["geralmente","usually"],occasionally:["de vez em quando","occasionally"]};
+   const [frequencyPt,frequencyEn]=frequency[p.adverb];
+   pt=frequencyPt+", "+pt.charAt(0).toLowerCase()+pt.slice(1);
+   en=en.replace(/^(I|Do you) /,s=>s+frequencyEn+" ");
+  }
+  explainPt+=" O advérbio "+a.jp+" acrescenta "+(p.pattern==="like"?"intensidade ao gosto":"frequência à ação")+". Neste exemplo, fica antes do predicado. É uma expansão opcional do molde.";
+  explainEn+=" The adverb "+a.jp+" adds "+(p.pattern==="like"?"degree to liking":"frequency to the action")+". In this example it comes before the predicate. It is an optional extension of the pattern.";
+ }
  const cap=(s:string)=>(s.charAt(0).toUpperCase()+s.slice(1)).replace(/\s+([?.])/g,"$1");
  return {japanese:words.map(w=>w.jp).join("")+"。",tokens:words.map(w=>w.id),words,romaji:words.map(w=>w.romaji).join(" "),pt:cap(pt),en:cap(en),explainPt,explainEn,pattern};
 }
