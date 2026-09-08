@@ -27,3 +27,12 @@ export const blocks = sqliteTable("blocks", {
   userId: text("user_id").notNull().references(() => profiles.id),
   targetId: text("target_id").notNull().references(() => profiles.id), createdAt: integer("created_at").notNull(),
 }, t => [primaryKey({columns:[t.userId,t.targetId]}), index("idx_blocks_target").on(t.targetId,t.userId)]);
+export const frontendCodes=sqliteTable("frontend_codes",{
+ codeHash:text("code_hash").primaryKey(),authKey:text("auth_key").notNull(),challenge:text("challenge").notNull(),expiresAt:integer("expires_at").notNull(),
+},t=>[index("idx_frontend_codes_user_expiry").on(t.authKey,t.expiresAt)]);
+export const frontendSessions=sqliteTable("frontend_sessions",{
+ tokenHash:text("token_hash").primaryKey(),authKey:text("auth_key").notNull(),expiresAt:integer("expires_at").notNull(),
+},t=>[index("idx_frontend_sessions_expiry").on(t.expiresAt)]);
+export const studyProgress=sqliteTable("study_progress",{
+ authKey:text("auth_key").notNull(),storyId:text("story_id").notNull(),step:integer("step").notNull(),dueAt:integer("due_at").notNull(),reviewedAt:integer("reviewed_at").notNull(),attempts:integer("attempts").notNull(),
+},t=>[primaryKey({columns:[t.authKey,t.storyId]})]);

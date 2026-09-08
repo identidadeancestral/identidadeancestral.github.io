@@ -1,4 +1,5 @@
 import { avatars, compose, type MessagePayload } from "./vocabulary";
+import { FRONTEND_ORIGIN } from "./frontend-config";
 export type Statement = {bind(...values:unknown[]):Statement;first<T=Record<string,unknown>>():Promise<T|null>;all<T=Record<string,unknown>>():Promise<{results:T[]}>;run():Promise<unknown>};
 export type Database = {prepare(sql:string):Statement;batch(statements:Statement[]):Promise<unknown>};
 type Row=Record<string,any>;
@@ -25,7 +26,7 @@ function payloadOf(raw:unknown):MessagePayload {
   try{compose(value);}catch{return fail("invalid_message");}
   return value;
 }
-export async function handleChat(req:Request,db:Database,authKey:string|null):Promise<Response> {
+export async function handleChat(req:Request,db:Database,authKey:string|null,frontendAuthenticated=false):Promise<Response> {
   try {
     if(!authKey)return json({error:"sign_in"},401);
     const now=Date.now();
@@ -67,8 +68,9 @@ export async function handleChat(req:Request,db:Database,authKey:string|null):Pr
     }
     if(req.method!=="POST")return json({error:"method"},405);
     const origin=req.headers.get("origin");
-    if(origin&&origin!==new URL(req.url).origin)return fail("origin",403);
-    if(req.headers.get("sec-fetch-site")==="cross-site")return fail("origin",403);
+    const trustedFrontend=frontendAuthenticated&&origin===FRONTEND_ORIGIN;
+    if(origin&&origin!==new URL(req.url).origin&&!trustedFrontend)return fail("origin",403);
+    if(req.headers.get("sec-fetch-site")==="cross-site"&&!trustedFrontend)return fail("origin",403);
     if(!req.headers.get("content-type")?.includes("application/json"))return fail("invalid_input",415);
     if(Number(req.headers.get("content-length")||0)>10000)return fail("too_large",413);
     const raw=await req.text();if(raw.length>10000)return fail("too_large",413);

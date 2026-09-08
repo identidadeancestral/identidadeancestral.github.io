@@ -7,8 +7,8 @@ import {join} from "node:path";
 import ts from "typescript";
 
 const temporary=await mkdtemp(join(tmpdir(),"kotoba-test-"));
-for(const name of ["study-data","japanese","stories","vocabulary","chat-server"]) {
-  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data)"/g,'"./$1.mjs"');
+for(const name of ["study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server"]) {
+  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server)"/g,'"./$1.mjs"');
   await writeFile(join(temporary,name+".mjs"),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
 }
 const {handleChat}=await import(join(temporary,"chat-server.mjs"));
@@ -16,6 +16,9 @@ const {compose,templates}=await import(join(temporary,"vocabulary.mjs"));
 const {entries,entryById}=await import(join(temporary,"study-data.mjs"));
 const {formsFor,romanize}=await import(join(temporary,"japanese.mjs"));
 const {stories}=await import(join(temporary,"stories.mjs"));
+const {FRONTEND_ORIGIN}=await import(join(temporary,"frontend-config.mjs"));
+const {issueFrontendCode,handleFrontendSession,frontendIdentity,randomToken,digest,preflight}=await import(join(temporary,"frontend-session.mjs"));
+const {handleStudy}=await import(join(temporary,"study-server.mjs"));
 const sql=new DatabaseSync(":memory:");
 sql.exec("PRAGMA foreign_keys=ON");
 for(const file of (await readdir(new URL("../drizzle/",import.meta.url))).filter(f=>f.endsWith(".sql")).sort())sql.exec(await readFile(new URL("../drizzle/"+file,import.meta.url),"utf8"));
@@ -125,5 +128,55 @@ test("scene order reconstructs Japanese, and new messages are server-validated",
   const got=(await request("auth-a",null,"?room="+dm)).data.messages.at(-1);assert.equal(got.japanese,compose(payload).japanese);assert.deepEqual(got.payload,payload);
  }
  for(const payload of [{kind:"story",story:"invented"},{kind:"word",entry:"verb:come",form:"invented"},{kind:"word",entry:"noun:tree",form:"past"},{kind:"word",entry:"__proto__",form:"dictionary"}])assert.equal((await request("auth-b",{action:"send",roomId:dm,clientId:crypto.randomUUID(),payload})).status,400);
+});
+const externalRequest=(path,body,token,origin=FRONTEND_ORIGIN)=>new Request("https://kotoba.test"+path,{
+ method:body?"POST":"GET",headers:{Origin:origin,"Sec-Fetch-Site":"cross-site",...(body?{"Content-Type":"application/json"}:{}),...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined,
+});
+test("GitHub sign-in requires the proof, consumes codes once, and stores only hashes",async()=>{
+ const verifier=randomToken(),code=await issueFrontendCode(db,"auth-a",await digest(verifier));
+ const stored=sql.prepare("SELECT * FROM frontend_codes WHERE code_hash=?").get(await digest(code));
+ assert.equal(stored.auth_key,"auth-a");assert.ok(!Object.values(stored).includes(code));
+ const wrong=await handleFrontendSession(externalRequest("/api/frontend-session",{action:"exchange",code,verifier:randomToken()}),db);
+ assert.equal(wrong.status,401);
+ const response=await handleFrontendSession(externalRequest("/api/frontend-session",{action:"exchange",code,verifier}),db);
+ assert.equal(response.status,200);assert.equal(response.headers.get("Access-Control-Allow-Origin"),FRONTEND_ORIGIN);
+ const session=await response.json();assert.match(session.token,/^[A-Za-z0-9_-]{43}$/);
+ assert.ok(session.expiresAt>Date.now()+7*60*60*1000);
+ assert.equal((await handleFrontendSession(externalRequest("/api/frontend-session",{action:"exchange",code,verifier}),db)).status,401);
+ const saved=sql.prepare("SELECT * FROM frontend_sessions WHERE token_hash=?").get(await digest(session.token));
+ assert.equal(saved.auth_key,"auth-a");assert.ok(!Object.values(saved).includes(session.token));
+ assert.equal(await frontendIdentity(externalRequest("/api/chat",null,session.token),db),"auth-a");
+ assert.equal(await frontendIdentity(externalRequest("/api/chat",null,randomToken()),db),null);
+ assert.equal(await frontendIdentity(externalRequest("/api/chat",null,session.token,"https://evil.test"),db),null);
+ // The chat only allows a cross-origin write after the route verifies the session.
+ const req=()=>externalRequest("/api/chat",{action:"heartbeat"},session.token);
+ assert.equal((await handleChat(req(),db,"auth-a",false)).status,403);
+ assert.equal((await handleChat(req(),db,await frontendIdentity(req(),db),true)).status,200);
+ assert.equal((await handleFrontendSession(externalRequest("/api/frontend-session",{action:"logout"},session.token),db)).status,200);
+ assert.equal(await frontendIdentity(externalRequest("/api/chat",null,session.token),db),null);
+});
+test("expired credentials and unapproved origins cannot open a session",async()=>{
+ assert.equal(preflight(externalRequest("/api/chat",null,null)).status,204);
+ const denied=preflight(externalRequest("/api/chat",null,null,"https://evil.test"));
+ assert.equal(denied.status,403);assert.equal(denied.headers.get("Access-Control-Allow-Origin"),null);
+ const verifier=randomToken(),code=await issueFrontendCode(db,"auth-a",await digest(verifier));
+ assert.equal((await handleFrontendSession(externalRequest("/api/frontend-session",{action:"exchange",code,verifier},null,"https://evil.test"),db)).status,403);
+ sql.prepare("UPDATE frontend_codes SET expires_at=? WHERE code_hash=?").run(Date.now()-1,await digest(code));
+ assert.equal((await handleFrontendSession(externalRequest("/api/frontend-session",{action:"exchange",code,verifier}),db)).status,401);
+ const token=randomToken();sql.prepare("INSERT INTO frontend_sessions VALUES(?,?,?)").run(await digest(token),"auth-a",Date.now()-1);
+ assert.equal(await frontendIdentity(externalRequest("/api/chat",null,token),db),null);
+ await assert.rejects(()=>issueFrontendCode(db,"","x".repeat(43)),/invalid_connect/);
+});
+test("review progress belongs to the signed-in learner and respects review intervals",async()=>{
+ const req=(body)=>externalRequest("/api/study",body);
+ assert.equal((await handleStudy(req(),db,null,true)).status,401);
+ assert.equal((await handleStudy(req({storyId:"today-sun",rating:"remembered"}),db,"study-a",false)).status,403);
+ const first=await handleStudy(req({storyId:"today-sun",rating:"remembered"}),db,"study-a",true);
+ assert.equal(first.status,200);const saved=await first.json();assert.equal(saved.step,1);assert.ok(saved.dueAt>Date.now()+23*60*60*1000);
+ const early=await (await handleStudy(req({storyId:"today-sun",rating:"remembered"}),db,"study-a",true)).json();assert.equal(early.step,1);assert.equal(early.dueAt,saved.dueAt);
+ const other=await (await handleStudy(req(),db,"study-b",true)).json();assert.deepEqual(other.progress,[]);
+ const mine=await (await handleStudy(req(),db,"study-a",true)).json();assert.equal(mine.progress[0].story_id,"today-sun");assert.equal(mine.progress[0].auth_key,undefined);
+ const again=await (await handleStudy(req({storyId:"today-sun",rating:"again"}),db,"study-a",true)).json();assert.equal(again.step,0);assert.ok(again.dueAt>Date.now()+9*60*1000&&again.dueAt<Date.now()+11*60*1000);
+ for(const storyId of ["unknown","__proto__"])assert.equal((await handleStudy(req({storyId,rating:"remembered"}),db,"study-a",true)).status,400);
 });
 test.after(async()=>{sql.close();await rm(temporary,{recursive:true,force:true});});

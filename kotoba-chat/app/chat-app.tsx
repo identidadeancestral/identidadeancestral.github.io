@@ -16,6 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { avatars, compose, sentenceWords, lexicon, templates, type Lang, type MessagePayload, type Word } from "@/lib/vocabulary";
 import SentenceScene from "./sentence-scene";
+import { jsonRequest, type AccessProps } from "@/lib/client-api";
 import WordLibrary, { EBOOK_URL } from "./word-library";
 import { stories, storyById } from "@/lib/stories";
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -43,12 +44,6 @@ const errors:Record<string,[string,string]>={
   group_full:["O grupo chegou ao limite de 25 pessoas.","The group has reached its 25-person limit."],
   invalid_message:["Escolha uma frase e uma figura compatíveis.","Choose a matching phrase and picture."],
 };
-async function api(path="",body?:unknown) {
-  const response=await fetch("/api/chat"+path,{method:body?"POST":"GET",headers:body?{"Content-Type":"application/json"}:undefined,body:body?JSON.stringify(body):undefined,cache:"no-store"});
-  const data=await response.json();
-  if(!response.ok)throw new Error(data.error||"unavailable");
-  return data;
-}
 const levelText=(level:string,lang:Lang)=>({beginner:lang==="pt"?"Começando":"Beginner",learning:lang==="pt"?"Em prática":"Learning",advanced:lang==="pt"?"Avançado":"Advanced"}[level]||level);
 function Choice({value,onChange,items,label,id}:{value:string;onChange:(v:string)=>void;items:{value:string;label:string}[];label:string;id?:string}) {
   return <Select value={value} onValueChange={onChange}><SelectTrigger id={id} aria-label={label}><SelectValue /></SelectTrigger><SelectContent>{items.map(i=><SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}</SelectContent></Select>;
@@ -78,7 +73,8 @@ function ProfileForm({me,lang,onSave,busy}:{me:Profile|null;lang:Lang;onSave:(v:
     <Button type="submit" size="lg" disabled={busy} className="full-button">{busy?t("Salvando…","Saving…"):me?t("Salvar perfil","Save profile"):t("Criar meu perfil","Create my profile")}<ArrowUpRight/></Button>
   </form>;
 }
-export default function ChatApp({signedIn,signInPath,signOutPath}:{signedIn:boolean;signInPath:string;signOutPath:string}) {
+export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessionToken,onSignOut,langOverride,composeSeed,profileRequest}:AccessProps & {langOverride?:Lang;profileRequest?:number;composeSeed?:{payload:MessagePayload;id:number}}) {
+  const api=useCallback((path="",body?:unknown)=>jsonRequest("/api/chat"+path,body,apiOrigin,sessionToken),[apiOrigin,sessionToken]);
   const [lang,setLang]=useState<Lang>("pt");
   const t=useCallback((pt:string,en:string)=>lang==="pt"?pt:en,[lang]);
   const [mode,setMode]=useState<Mode>("bridge");
@@ -117,19 +113,22 @@ export default function ChatApp({signedIn,signInPath,signOutPath}:{signedIn:bool
   const pendingSend=useRef<{id:string;signature:string}|null>(null);
   const chosen=templates.find(x=>x.id===template)!;
   const draft:MessagePayload=composeMode==="text"?{kind:"text",text}:composeMode==="story"?{kind:"story",story:storyId}:{kind:"visual",template,noun,question};
+  useEffect(()=>{if(composeSeed){const p=composeSeed.payload;if(p.kind==="story"){setStoryId(p.story);setComposeMode("story");}else{setText(compose(p).japanese);setComposeMode("text");}setMobileChat(true);}},[composeSeed]);
+  useEffect(()=>{if(langOverride)setLang(langOverride);},[langOverride]);
+  useEffect(()=>{if(profileRequest){setProfileOpen(true);setMobileChat(false);}},[profileRequest]);
   const me=data.me;
   const room=data.rooms.find(r=>r.id===active)||roomData?.room;
   const msgError=useCallback((e:unknown)=>(errors[e instanceof Error?e.message:"unavailable"]||errors.unavailable)[lang==="pt"?0:1],[lang]);
-  useEffect(()=>{try{const l=localStorage.getItem("kotoba-language");if(l==="en"||l==="pt")setLang(l);else if(!navigator.language.startsWith("pt"))setLang("en");const m=localStorage.getItem("kotoba-mode");if(["pictures","bridge","japanese"].includes(m||""))setMode(m as Mode);}catch{}},[]);
+  useEffect(()=>{try{const l=localStorage.getItem("kotoba-language");if(langOverride)setLang(langOverride);else if(l==="en"||l==="pt")setLang(l);else if(!navigator.language.startsWith("pt"))setLang("en");const m=localStorage.getItem("kotoba-mode");if(["pictures","bridge","japanese"].includes(m||""))setMode(m as Mode);}catch{}},[langOverride]);
   useEffect(()=>{document.documentElement.lang=lang==="pt"?"pt-BR":"en";try{localStorage.setItem("kotoba-language",lang);localStorage.setItem("kotoba-mode",mode);}catch{}},[lang,mode]);
-  const overview=useCallback(async()=>{const next=await api();setData({...initial,...next});setError("");setLoading(false);return next as Overview;},[]);
+  const overview=useCallback(async()=>{const next=await api();setData({...initial,...next});setError("");setLoading(false);return next as Overview;},[api]);
   const updateMessages=useCallback((list:Message[])=>{messagesRef.current=list;setMessages(list);},[]);
   const openRoom=useCallback(async(id:string)=>{
     activeRef.current=id;setActive(id);setRoomData(null);updateMessages([]);setMobileChat(true);setRoomLoading(true);setHasOlder(false);setTab("chats");
     try{const result:RoomData=await api("?room="+encodeURIComponent(id));if(activeRef.current!==id)return;setRoomData(result);updateMessages(result.messages);setHasOlder(result.hasOlder);await api("",{action:"heartbeat",roomId:id,lastRead:result.messages.at(-1)?.id||0});}
     catch(e){if(activeRef.current===id){setError(msgError(e));}}
     finally{if(activeRef.current===id)setRoomLoading(false);}
-  },[msgError,updateMessages]);
+  },[msgError,updateMessages,api]);
   const poll=useCallback(async()=>{
     const id=activeRef.current;
     if(!id)return;
@@ -138,7 +137,7 @@ export default function ChatApp({signedIn,signInPath,signOutPath}:{signedIn:bool
     if(activeRef.current!==id)return;
     setRoomData(result);
     if(result.messages.length){const map=new Map(messagesRef.current.map(m=>[m.id,m]));result.messages.forEach(m=>map.set(m.id,m));updateMessages(Array.from(map.values()).sort((a,b)=>a.id-b.id));}
-  },[updateMessages]);
+  },[updateMessages,api]);
   useEffect(()=>{
     if(!signedIn)return;
     let disposed=false,timer:ReturnType<typeof setTimeout>;
@@ -150,7 +149,7 @@ export default function ChatApp({signedIn,signInPath,signOutPath}:{signedIn:bool
     };
     void sync();
     return()=>{disposed=true;clearTimeout(timer);};
-  },[signedIn,overview,poll,msgError]);
+  },[signedIn,overview,poll,msgError,api]);
   useEffect(()=>{bottom.current?.scrollIntoView({behavior:"smooth",block:"end"});},[messages.at(-1)?.id,practice.length,active]);
   const act=async(body:unknown,success?:string)=>{
     setBusy(true);
@@ -238,7 +237,7 @@ export default function ChatApp({signedIn,signInPath,signOutPath}:{signedIn:bool
     </div>
     <WordLibrary open={libraryOpen} onOpenChange={setLibraryOpen} lang={lang} initialEntry={studyEntry} busy={busy||!!dmWaiting||roomLoading} onUse={payload=>{setMobileChat(true);void send(payload);}}/>
     <Sheet open={!!word} onOpenChange={open=>{if(!open)setWord(null);}}><SheetContent className="word-sheet"><SheetHeader><SheetTitle>{t("Uma palavra de cada vez","One word at a time")}</SheetTitle><SheetDescription>{t("Observe a escrita e tente lembrar o sentido.","Look at the writing and try to recall its meaning.")}</SheetDescription></SheetHeader>{word&&<div className="word-detail"><span className="word-big" lang="ja">{word.jp}</span><p className="word-kana" lang="ja">{word.kana}</p><p className="word-romaji">{word.romaji}</p>{reveal?<><div className="word-meaning"><span>{word.icon}</span><strong>{word[lang]}</strong></div><p>{(lang==="pt"?word.notePt:word.noteEn)||t("Associe a imagem à palavra inteira. Use a frase na conversa e depois tente lembrar sem a pista.","Associate the picture with the whole word. Use the sentence in a conversation, then try recalling it without the cue.")}</p><Button variant="outline" onClick={()=>setReveal(false)}>{t("Esconder a pista e tentar lembrar","Hide the cue and try to remember")}</Button></>:<Button onClick={()=>setReveal(true)}>{t("Revelar o sentido","Reveal the meaning")}</Button>}<div className="word-footnote">{word.grammar?t("Símbolo didático do app. A função depende da frase.","This app’s learning symbol. The role depends on the sentence."):t("As imagens ajudam a lembrar; a escrita guarda a palavra.","Pictures help recall; the writing holds the word.")}</div></div>}</SheetContent></Sheet>
-    <Dialog open={profileOpen} onOpenChange={setProfileOpen}><DialogContent className="scroll-dialog"><DialogHeader><DialogTitle>{t("Seu perfil","Your profile")}</DialogTitle><DialogDescription>{t("Escolha como aparece para a comunidade.","Choose how you appear to the community.")}</DialogDescription></DialogHeader>{me&&<ProfileForm key={me.id} me={me} lang={lang} busy={busy} onSave={async value=>{const r=await act(value,t("Perfil salvo.","Profile saved."));if(r)setProfileOpen(false);}}/>}{data.blocks.length>0&&<div className="blocked-list"><h3><Shield/>{t("Pessoas bloqueadas","Blocked people")}</h3>{data.blocks.map(p=><div key={p.id}><span>{p.avatar} {p.nickname}</span><Button size="sm" variant="ghost" disabled={busy} onClick={()=>act({action:"unblock",targetId:p.id})}>{t("Desbloquear","Unblock")}</Button></div>)}</div>}<Button variant="ghost" asChild><a href={signOutPath} target="_top"><LogOut/>{t("Sair da conta","Sign out")}</a></Button></DialogContent></Dialog>
+    <Dialog open={profileOpen} onOpenChange={setProfileOpen}><DialogContent className="scroll-dialog"><DialogHeader><DialogTitle>{t("Seu perfil","Your profile")}</DialogTitle><DialogDescription>{t("Escolha como aparece para a comunidade.","Choose how you appear to the community.")}</DialogDescription></DialogHeader><ProfileForm key={me?.id||"new"} me={me} lang={lang} busy={busy} onSave={async value=>{const r=await act(value,t("Perfil salvo.","Profile saved."));if(r)setProfileOpen(false);}}/>{data.blocks.length>0&&<div className="blocked-list"><h3><Shield/>{t("Pessoas bloqueadas","Blocked people")}</h3>{data.blocks.map(p=><div key={p.id}><span>{p.avatar} {p.nickname}</span><Button size="sm" variant="ghost" disabled={busy} onClick={()=>act({action:"unblock",targetId:p.id})}>{t("Desbloquear","Unblock")}</Button></div>)}</div>}<Button variant="ghost" asChild><a href={signOutPath} target="_top" onClick={e=>{if(onSignOut){e.preventDefault();onSignOut();}}}><LogOut/>{t("Sair da conta","Sign out")}</a></Button></DialogContent></Dialog>
     <Dialog open={groupOpen} onOpenChange={setGroupOpen}><DialogContent className="scroll-dialog"><DialogHeader><DialogTitle>{t("Criar um grupo","Create a group")}</DialogTitle><DialogDescription>{t("As pessoas recebem um convite e escolhem participar. Até 25 participantes.","People receive an invitation and choose to join. Up to 25 members.")}</DialogDescription></DialogHeader><form className="profile-form" onSubmit={async e=>{e.preventDefault();const r=await act({action:"group",title:groupName,targets});if(r){setGroupOpen(false);setGroupName("");setTargets([]);await openRoom(r.roomId);}}}><div className="field"><Label htmlFor="group-name">{t("Nome do grupo","Group name")}</Label><Input id="group-name" value={groupName} onChange={e=>setGroupName(e.target.value)} required minLength={2} maxLength={60} placeholder={t("Japonês no dia a dia","Everyday Japanese")}/></div><div className="group-people">{!data.people.length?<p className="small-note">{t("Quando outra pessoa estiver disponível, ela aparecerá aqui para você convidar.","When another person is available, they will appear here for you to invite.")}</p>:data.people.map(p=><label key={p.id} className="group-person"><Checkbox checked={targets.includes(p.id)} onCheckedChange={checked=>setTargets(old=>checked?[...old,p.id]:old.filter(id=>id!==p.id))}/><span className="avatar">{p.avatar}</span><span>{p.nickname}<small>{p.language}</small></span></label>)}</div><Button disabled={busy||!targets.length} type="submit">{t("Criar e enviar convites","Create and send invitations")}</Button></form></DialogContent></Dialog>
     <Sheet open={membersOpen} onOpenChange={setMembersOpen}><SheetContent className="members-sheet"><SheetHeader><SheetTitle>{title}</SheetTitle><SheetDescription>{t("Participantes da conversa","Conversation members")}</SheetDescription></SheetHeader><div className="members-content">{roomData?.members.map(p=><div className="member-row" key={p.id}><span className="avatar">{p.avatar}</span><div><strong>{p.nickname}</strong><small>{p.state==="active"?(p.id===room?.owner_id?t("Administração","Admin"):p.language):p.state==="pending"?t("Convite pendente","Invitation pending"):t("Saiu da conversa","Left the chat")}</small></div>{p.id!==me?.id&&<Button variant="ghost" size="sm" disabled={busy||data.blocks.some(b=>b.id===p.id)} onClick={async()=>{const r=await act({action:"block",targetId:p.id},t("Pessoa bloqueada.","Person blocked."));if(r){setMembersOpen(false);if(room?.kind==="dm")practiceRoom();else{updateMessages(messagesRef.current.filter(m=>m.user_id!==p.id));await poll();}}}}>{data.blocks.some(b=>b.id===p.id)?t("Bloqueada","Blocked"):t("Bloquear","Block")}</Button>}</div>)}{room?.kind==="group"&&room.owner_id===me?.id&&<section className="add-members"><h3>{t("Convidar para o grupo","Invite to the group")}</h3>{data.people.filter(p=>!roomData?.members.some(m=>m.id===p.id&&["active","pending"].includes(m.state||""))).map(p=><div className="member-row" key={p.id}><span>{p.avatar} {p.nickname}</span><Button variant="outline" size="sm" disabled={busy} onClick={async()=>{const r=await act({action:"invite",roomId:active,targetId:p.id},t("Convite enviado.","Invitation sent."));if(r)await poll();}}>{t("Convidar","Invite")}</Button></div>)}</section>}<p className="small-note">{t("Ao bloquear alguém, você deixa de ver as mensagens dessa pessoa e ela não pode convidar você. Em grupos compartilhados, as mensagens entre vocês também ficam ocultas.","Blocking hides that person’s messages and prevents invitations. In shared groups, messages between you are also hidden.")}</p><Button variant="outline" onClick={()=>setConfirmLeave(true)}><LogOut/>{t("Sair da conversa","Leave conversation")}</Button></div></SheetContent></Sheet>
     <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}><AlertDialogContent><AlertDialogTitle>{t("Sair desta conversa?","Leave this conversation?")}</AlertDialogTitle><AlertDialogDescription>{t("Você precisará de um novo convite para voltar.","You will need a new invitation to return.")}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{t("Cancelar","Cancel")}</AlertDialogCancel><AlertDialogAction disabled={busy} onClick={async e=>{e.preventDefault();const r=await act({action:"leave",roomId:active});if(r){setMembersOpen(false);setConfirmLeave(false);practiceRoom();}}}>{t("Sair da conversa","Leave conversation")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

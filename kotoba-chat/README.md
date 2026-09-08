@@ -4,6 +4,9 @@ Chat para aprender japonês com outras pessoas, associado ao Método 100 Blocos 
 
 ## Funciona nesta versão
 
+- Tela inicial em três passos: ver a cena, ordenar os blocos e recordar o sentido sem figuras.
+- Revisões das quatro cenas salvas por conta, com intervalos de 10 minutos a 60 dias conforme a autoavaliação.
+- Leitura lenta por síntese de voz quando o aparelho disponibiliza uma voz japonesa.
 - Entrada com ChatGPT e criação de perfil com apelido, avatar, idioma e nível.
 - Pessoas disponíveis, convites com aceite e conversas individuais.
 - Grupos com até 25 participantes, convites, saída e administração.
@@ -27,7 +30,8 @@ Requer Node.js 22.13 ou mais recente. O projeto usa React, Vinext e Cloudflare D
 2. Verifique as permissões com `node --test tests/chat-permissions.test.mjs`.
 3. Verifique os tipos com `npx tsc --noEmit`.
 4. Gere mudanças no banco com `npm run db:generate`.
-5. Compile com `npm run build`.
+5. Compile o servidor com `npm run build`.
+6. Compile a interface para GitHub Pages com `npm run build:github`; publique o conteúdo de `github-dist/` em `ojiisan-chat/` na branch usada pelo Pages.
 
 A configuração de hospedagem fica em `.openai/hosting.json`. As migrações em `drizzle/` devem ser aplicadas na ordem. Não altere uma migração depois de publicada.
 
@@ -35,7 +39,11 @@ A configuração de hospedagem fica em `.openai/hosting.json`. As migrações em
 
 A publicação utiliza o Sites e a autenticação gerenciada “Entrar com ChatGPT”. O servidor confia nos cabeçalhos de identidade encaminhados pelo serviço de hospedagem. Não exponha este servidor diretamente com cabeçalhos de identidade fornecidos pelo visitante. Ao migrar para outro provedor, implemente e verifique a autenticação desse provedor antes de abrir o acesso.
 
-O GitHub guarda o código. GitHub Pages sozinho não executa este servidor nem o banco de conversas. O endereço online é fornecido pela publicação no Sites.
+A interface está preparada para `https://identidadeancestral.github.io/ojiisan-chat/`. GitHub Pages entrega HTML, CSS e JavaScript; o servidor e o banco continuam no Sites. Os endereços permitidos estão em `lib/frontend-config.ts`. O conteúdo da raiz do site Identidade Ancestral é preservado.
+
+O botão Entrar abre a autenticação do Sites por navegação de página inteira. Após a autenticação gerenciada, `/connect` emite um código de uso único, válido por dois minutos, vinculado a uma prova PKCE S256. O retorno usa um destino fixo e um fragmento que o cliente remove antes da troca. O cliente valida o estado da tentativa e troca o código usando o verificador temporário desta aba. O servidor aceita CORS apenas da origem GitHub configurada.
+
+As sessões da interface GitHub expiram em oito horas e são revogadas ao sair. O servidor guarda somente hashes dos códigos e tokens; a aba guarda o token opaco em `sessionStorage`. Não coloque credenciais de infraestrutura no frontend. Cada requisição continua verificando identidade, participação na conversa e bloqueios no servidor. Ao sair ou trocar de sessão, os dados da tela são descartados.
 
 ## Comportamento e limites
 
@@ -49,11 +57,11 @@ O GitHub guarda o código. GitHub Pages sozinho não executa este servidor nem o
 - As animações usam símbolos emoji do aparelho, que podem variar visualmente. Cada animação corresponde a uma das estruturas de frase selecionadas.
 - A passagem entre quadros acompanha a escrita japonesa. Partículas mostram relações e não são tratadas como eventos físicos. Os quatro roteiros atuais são passados; a forma て inicial liga as ações.
 - Palavras avulsas e flexões são cartões didáticos. Não existe montagem automática de qualquer combinação das 300 palavras, nem filme gerado para texto livre.
-- O cronograma de revisão do ebook é orientação; esta versão não calcula revisões nem promete memorização permanente.
-- O espaço de prática é temporário. Somente idioma e modo de leitura são preferências locais; os dados de conversas reais ficam no banco.
+- As revisões são uma agenda simples por autoavaliação: “Preciso rever” agenda dez minutos; “Lembrei” progride por um, três, sete, 21 e 60 dias. Repetir “Lembrei” antes do prazo não pula etapas. Não há avaliação automática de pronúncia nem promessa de memorização permanente.
+- O espaço de prática é temporário. Idioma e modo de leitura são preferências locais. Conversas reais e revisões ficam no banco; o token de sessão do GitHub fica apenas nesta aba.
 - Figuras e símbolos de partículas são pistas didáticas. Kanji podem ter várias leituras; hiragana representa sons. A função de uma partícula depende da construção.
 
-Os testes usam quatro perfis sintéticos e SQLite real para verificar aceite, autorização, bloqueio, persistência, deduplicação de envio e paginação. Também verificam as 300 entradas, as flexões, exceções, a ordem dos roteiros e a validação de novas mensagens. Não criam usuários ou mensagens na publicação.
+Os testes usam quatro perfis sintéticos e SQLite real para verificar aceite, autorização, bloqueio, persistência, deduplicação de envio e paginação. Também verificam as 300 entradas, as flexões, exceções, a ordem dos roteiros e a validação de novas mensagens. Os testes também verificam o vínculo PKCE, uso único e expiração dos códigos, revogação de sessões, restrição de origem e separação do progresso por usuário. Não criam usuários ou mensagens na publicação. A compilação e esses testes não substituem uma verificação interativa de login em cada navegador.
 
 ## Referências pedagógicas
 

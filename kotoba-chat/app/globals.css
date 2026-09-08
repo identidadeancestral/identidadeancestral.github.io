@@ -511,3 +511,119 @@ details p { padding-top:6px; font-size:14px; }
  .film-sequence button { padding:5px; }
 }
 @media(max-width:370px) { .vocabulary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .open-vocabulary { padding:6px; } .film-buttons button { font-size:12px; } }
+
+/* A focused lesson sits above the existing community chat. */
+.ojiisan-app { min-height:100dvh; background:var(--background); color:var(--foreground); }
+.simple-header { max-width:1160px; margin:auto; padding:18px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.simple-brand { display:flex; align-items:center; gap:12px; min-width:0; text-decoration:none; }
+.simple-brand>span { display:grid; place-items:center; width:46px; height:46px; background:var(--secondary); border-radius:15px; font-size:31px; flex:none; }
+.simple-brand strong { display:block; font-size:21px; letter-spacing:-.6px; line-height:1.35; }
+.simple-brand small { display:block; color:var(--muted-foreground); font-size:14px; line-height:1.5; }
+.simple-account { display:flex; align-items:center; gap:8px; flex:none; }
+.simple-account [data-slot=button] { min-height:42px; font-size:14px; }
+.simple-nav { max-width:1104px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 0 14px; border-bottom:1px solid var(--border); gap:10px; }
+.simple-nav [data-slot=tabs-list] { height:44px; }
+.simple-nav [data-slot=tabs-trigger] { min-height:36px; gap:8px; padding:8px 18px; font-size:15px; }
+.simple-nav>[data-slot=button] { min-height:44px; font-size:15px; }
+.learning-page { max-width:780px; padding:32px 24px 22px; margin:auto; }
+.lesson-top { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; margin-bottom:22px; }
+.lesson-eyebrow { font-size:12px; letter-spacing:1.5px; font-weight:600; color:var(--primary); }
+.lesson-top h1 { font-size:clamp(24px,3vw,31px); line-height:1.35; font-weight:650; letter-spacing:-.8px; margin-top:5px; }
+.lesson-top [data-slot=select-trigger] { min-height:44px; width:auto; max-width:100%; background:var(--card); font-size:14px; }
+.lesson-steps { display:flex; list-style:none; gap:16px; margin:0 0 18px; padding:0; }
+.lesson-steps li { display:flex; align-items:center; gap:7px; color:var(--muted-foreground); font-size:14px; flex:1; line-height:1.4; }
+.lesson-steps li>span { width:26px; height:26px; display:grid; place-items:center; border:1px solid var(--border); border-radius:50%; flex:none; font-size:13px; }
+.lesson-steps li[aria-current=step] { color:var(--primary); font-weight:600; }
+.lesson-steps li[aria-current=step]>span { background:var(--primary); border-color:var(--primary); color:var(--primary-foreground); }
+.lesson-card { background:var(--card); border:1px solid var(--border); border-radius:22px; padding:26px; box-shadow:0 6px 24px #12392705; }
+.lesson-instruction { margin-bottom:18px; }
+.lesson-instruction h2 { font-size:20px; font-weight:600; letter-spacing:-.35px; }
+.lesson-instruction p { font-size:15px; line-height:1.6; color:var(--muted-foreground); margin-top:5px; }
+.lesson-card .sentence-scene { margin:0; }
+.lesson-card .film-stage { height:182px; }
+.lesson-card .film-sequence { flex-wrap:wrap; }
+.lesson-card .film-sequence button { flex:1 1 62px; min-height:65px; }
+.lesson-japanese { display:flex; justify-content:center; align-items:baseline; flex-wrap:wrap; gap:7px; font-size:clamp(23px,4vw,31px); line-height:1.9; padding-top:16px; }
+.lesson-japanese ruby { ruby-align:center; }
+.lesson-japanese rt { font-size:12px; color:var(--muted-foreground); }
+.lesson-meaning { text-align:center; font-size:16px; line-height:1.65; color:var(--muted-foreground); margin:2px 0 15px; }
+.lesson-tools { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; margin:16px 0; }
+.lesson-tools [data-slot=button] { min-height:42px; font-size:14px; }
+.lesson-grammar { margin:14px 0 20px; font-size:14px; line-height:1.75; border-top:1px solid var(--border); padding-top:14px; }
+.lesson-grammar summary { cursor:pointer; color:var(--primary); font-weight:550; min-height:28px; }
+.lesson-grammar p { margin-top:9px; color:var(--muted-foreground); }
+.lesson-primary { display:flex; width:100%; min-height:49px; height:auto; padding:13px 20px; font-size:16px; white-space:normal; }
+.sentence-slots,.sentence-bank { display:flex; flex-wrap:wrap; gap:10px; }
+.sentence-slots { min-height:110px; border:1px dashed var(--input); border-radius:15px; padding:16px; background:var(--background); align-items:center; margin:23px 0 20px; }
+.sentence-slots>p { font-size:15px; color:var(--muted-foreground); text-align:center; width:100%; }
+.sentence-slots button,.sentence-bank button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:10px 13px; min-height:76px; min-width:58px; border:1px solid var(--border); background:var(--card); border-radius:12px; cursor:pointer; }
+.sentence-slots button { border-color:var(--primary); background:var(--secondary); }
+.sentence-slots button span,.sentence-bank button span { font-size:26px; }
+.sentence-slots button strong,.sentence-bank button strong { font-size:21px; font-weight:550; }
+.sentence-bank button:disabled { opacity:.25; cursor:default; }
+.sentence-bank button:not(:disabled):hover { border-color:var(--primary); background:var(--secondary); }
+.recall-japanese { font-size:clamp(25px,4vw,35px); line-height:1.8; text-align:center; padding:38px 0; overflow-wrap:anywhere; }
+.recall-reveal { display:flex; margin:0 auto 24px; min-height:46px; font-size:15px; }
+.recall-answer { background:var(--secondary); border-radius:13px; padding:18px; margin-bottom:24px; text-align:center; font-size:17px; line-height:1.7; }
+.recall-answer p+p { margin-top:8px; font-size:16px; color:var(--muted-foreground); }
+.review-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0 18px; }
+.review-actions [data-slot=button] { min-height:48px; height:auto; padding:12px; font-size:15px; white-space:normal; }
+.lesson-small { font-size:14px; color:var(--muted-foreground); line-height:1.7; margin:12px 0; }
+.lesson-feedback { font-size:15px; line-height:1.65; padding:13px 16px; border-radius:12px; background:var(--secondary); margin-top:18px; overflow-wrap:anywhere; }
+.lesson-feedback [data-slot=button] { margin-left:6px; }
+.review-due { width:100%; display:flex; gap:10px; align-items:center; text-align:left; background:var(--secondary); padding:13px 16px; border-radius:12px; margin-bottom:20px; font-size:15px; cursor:pointer; }
+.review-due svg { width:18px; flex:none; }
+.review-due svg:last-child { margin-left:auto; }
+.lesson-next { display:flex; flex-wrap:wrap; gap:9px; justify-content:center; margin:22px 0; }
+.lesson-next [data-slot=button] { min-height:44px; height:auto; white-space:normal; padding:10px 13px; font-size:14px; }
+.learning-footer { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:7px 16px; border-top:1px solid var(--border); padding:21px 0 0; color:var(--muted-foreground); font-size:13px; line-height:1.7; }
+.learning-footer a { display:flex; align-items:center; gap:4px; text-decoration:underline; text-underline-offset:3px; }
+.learning-footer svg { width:15px; flex:none; }
+.simple-chat .brand-row,.simple-chat .learning-shortcuts { display:none; }
+.simple-chat .app-frame { padding:18px 24px; min-height:0; background:var(--background); }
+.simple-chat .chat-shell { height:calc(100dvh - 179px); min-height:570px; max-width:1104px; border-radius:20px; }
+.simple-chat .people-panel { padding-top:12px; }
+.simple-chat[hidden] { display:none; }
+.app-opening { min-height:100dvh; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; font-size:17px; background:var(--background); }
+.app-opening>span { font-size:48px; }
+.connection-notice { display:flex; align-items:center; justify-content:center; gap:15px; padding:14px 20px; font-size:15px; line-height:1.5; background:var(--secondary); }
+.connection-notice button { text-decoration:underline; min-height:36px; flex:none; cursor:pointer; }
+.ojiisan-app button:focus-visible,.ojiisan-app a:focus-visible,.ojiisan-app summary:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+@media(max-width:1160px) { .simple-nav { margin:0 28px; } }
+@media(max-width:680px) {
+ .simple-header { padding:15px 16px; gap:8px; }
+ .simple-brand { gap:9px; }
+ .simple-brand>span { width:37px; height:42px; font-size:27px; }
+ .simple-brand strong { font-size:18px; }
+ .simple-brand small { font-size:12px; max-width:160px; }
+ .simple-account { gap:1px; }
+ .simple-account [data-slot=button]:not([data-size=icon]) { padding:8px 10px; }
+ .simple-nav { margin:0 16px; padding-bottom:12px; }
+ .simple-nav [data-slot=tabs-trigger] { padding:8px 10px; gap:6px; font-size:14px; }
+ .simple-nav>[data-slot=button] { padding:8px; font-size:14px; }
+ .learning-page { padding:23px 16px 22px; }
+ .lesson-top { gap:13px; margin-bottom:20px; }
+ .lesson-top [data-slot=select-trigger] { width:100%; }
+ .lesson-steps { gap:7px; }
+ .lesson-steps li { font-size:13px; gap:5px; }
+ .lesson-steps li>span { width:23px; height:23px; font-size:12px; }
+ .lesson-card { padding:20px 15px; border-radius:17px; }
+ .lesson-instruction h2 { font-size:19px; }
+ .lesson-instruction p { font-size:14px; }
+ .lesson-card .film-stage { height:166px; }
+ .lesson-card .film-sequence button { flex-basis:45px; min-height:63px; }
+ .lesson-card .scene-controls { flex-wrap:wrap; gap:2px; }
+ .lesson-card .scene-controls>span { font-size:12px; }
+ .lesson-japanese { gap:4px; font-size:25px; }
+ .sentence-slots,.sentence-bank { gap:7px; }
+ .sentence-slots { padding:10px; }
+ .sentence-slots button,.sentence-bank button { padding:9px; }
+ .sentence-slots button strong,.sentence-bank button strong { font-size:20px; }
+ .review-actions { gap:8px; }
+ .review-actions [data-slot=button] { font-size:14px; padding:12px 8px; }
+ .simple-chat .app-frame { padding:0; }
+ .simple-chat .chat-shell { height:calc(100dvh - 148px); min-height:530px; border-radius:0; }
+ .simple-chat .people-panel,.simple-chat .conversation-panel { height:calc(100dvh - 148px); min-height:530px; }
+ .learning-footer { text-align:center; }
+}
+@media(max-width:370px) { .simple-brand small { max-width:125px; } .simple-nav>[data-slot=button]>svg { display:none; } .simple-brand>span { display:none; } .review-actions { grid-template-columns:1fr; } }
