@@ -70,5 +70,5 @@ export function entryNote(entry:Entry,lang:"pt"|"en") {
   "noun:grandfather":["おじいさん tem vogal longa: o-ji-i-san. おじさん, sem esse alongamento, significa tio / homem de meia-idade.","おじいさん has a long vowel: o-ji-i-san. おじさん without it means uncle / middle-aged man."],
   "noun:tree":["Imagine galhos nos traços de 木 e diga き. É uma pista visual; outras palavras com 木 podem ter outras leituras.","Picture branches in 木 and say き. This is a visual cue; 木 can have other readings in other words."],
  };
- return notes[entry.id]?.[lang==="pt"?0:1]||(lang==="pt"?"Observe a figura, diga a leitura e imagine uma situação com esta palavra. Depois esconda o sentido e tente recuperá-lo.":"Look at the picture, say the reading and imagine a situation with this word. Then hide the meaning and try to recall it.");
+ return notes[entry.id]?.[lang==="pt"?0:1]||(lang==="pt"?"Observe a escrita, diga a leitura e imagine uma situação com esta palavra. Depois esconda o sentido e tente recuperá-lo.":"Look at the writing, say the reading and imagine a situation with this word. Then hide the meaning and try to recall it.");
 }

@@ -7,8 +7,8 @@ import {join} from "node:path";
 import ts from "typescript";
 
 const temporary=await mkdtemp(join(tmpdir(),"kotoba-test-"));
-for(const name of ["study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server"]) {
-  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server)"/g,'"./$1.mjs"');
+for(const name of ["study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server","method-blocks","block-analysis","method-dialogue"]) {
+  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server|method-blocks|block-analysis|method-dialogue)"/g,'"./$1.mjs"');
   await writeFile(join(temporary,name+".mjs"),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
 }
 const {handleChat}=await import(join(temporary,"chat-server.mjs"));
@@ -19,6 +19,9 @@ const {stories}=await import(join(temporary,"stories.mjs"));
 const {FRONTEND_ORIGIN}=await import(join(temporary,"frontend-config.mjs"));
 const {issueFrontendCode,handleFrontendSession,frontendIdentity,randomToken,digest,preflight}=await import(join(temporary,"frontend-session.mjs"));
 const {handleStudy}=await import(join(temporary,"study-server.mjs"));
+const {defaultBlocks,methodPatterns,methodChoices,methodForms,hasForm,composeBlocks}=await import(join(temporary,"method-blocks.mjs"));
+const {blockWords}=await import(join(temporary,"block-analysis.mjs"));
+const {methodDialogue,suggestedReplies}=await import(join(temporary,"method-dialogue.mjs"));
 const sql=new DatabaseSync(":memory:");
 sql.exec("PRAGMA foreign_keys=ON");
 for(const file of (await readdir(new URL("../drizzle/",import.meta.url))).filter(f=>f.endsWith(".sql")).sort())sql.exec(await readFile(new URL("../drizzle/"+file,import.meta.url),"utf8"));
@@ -178,5 +181,50 @@ test("review progress belongs to the signed-in learner and respects review inter
  const mine=await (await handleStudy(req(),db,"study-a",true)).json();assert.equal(mine.progress[0].story_id,"today-sun");assert.equal(mine.progress[0].auth_key,undefined);
  const again=await (await handleStudy(req({storyId:"today-sun",rating:"again"}),db,"study-a",true)).json();assert.equal(again.step,0);assert.ok(again.dueAt>Date.now()+9*60*1000&&again.dueAt<Date.now()+11*60*1000);
  for(const storyId of ["unknown","__proto__"])assert.equal((await handleStudy(req({storyId,rating:"remembered"}),db,"study-a",true)).status,400);
+});
+test("book patterns preserve sentence roles, verb forms and contextual particles",()=>{
+ const cases=[
+  ["location",{},"私は家で本を読みます。"],
+  ["consume",{verb:"drink",slot:"water",form:"past"},"水を飲みました。"],
+  ["go",{slot:"school",question:true,topic:false},"学校に行きますか。"],
+  ["like",{slot:"coffee"},"コーヒーが好きです。"],
+  ["request",{slot:"water"},"水をください。"],
+  ["please",{verb:"say"},"もう一度言ってください。"],
+  ["invite",{verb:"drink",slot:"tea"},"お茶を飲みませんか。"],
+  ["introduce",{name:"ウメダ"},"ウメダといいます。"],
+  ["past",{verb:"read",slot:"book"},"昨日本を読みました。"],
+  ["activity",{slot:"shopping"},"買い物をします。"],
+ ];
+ for(const [pattern,patch,jp] of cases)assert.equal(compose({...defaultBlocks(pattern),...patch}).japanese,jp);
+ assert.equal(blockWords(defaultBlocks("like")).find(w=>w.jp==="好きです").role,"adjective");
+ const base=composeBlocks(defaultBlocks());assert.equal(base.words.find(w=>w.jp==="で").role,"particle");assert.equal(base.words.find(w=>w.jp==="読みます").role,"verb");
+ assert.match(base.romaji,/watashi wa/);assert.match(base.romaji,/hon o/);
+ for(const p of methodPatterns)for(const verb of p.verbs.length?p.verbs:[undefined]){
+  const d={...defaultBlocks(p.id),verb},slots=methodChoices(p.id,verb);
+  for(const slot of slots.length?slots:[undefined])for(const form of hasForm(p.id)?methodForms.map(f=>f.id):[d.form]){
+   const c=compose({...d,slot,form});assert.ok(c.japanese.endsWith("。"));assert.ok(!c.japanese.includes("undefined"));assert.ok(c.words.every(w=>w.role&&w.jp&&w.kana));assert.equal(c.words.map(w=>w.jp).join("")+"。",c.japanese);
+  }
+ }
+ for(const patch of [{verb:"go"},{slot:"school"},{form:"invented"},{slot:"__proto__"}])assert.throws(()=>compose({...defaultBlocks("consume"),...patch}));
+ for(const p of [defaultBlocks("go"),defaultBlocks("consume"),defaultBlocks("like"),defaultBlocks("past")])for(const reply of suggestedReplies({...p,question:true,topic:false}))assert.doesNotThrow(()=>compose(reply));
+});
+test("two consenting members exchange the method conversation with server-built explanations",async()=>{
+ const first=await create("method-a","Aluno A"),second=await create("method-b","Aluno B");
+ const room=(await request("method-a",{action:"dm",targetId:second.id})).data.roomId;assert.ok(room);
+ await request("method-b",{action:"accept",roomId:room});
+ for(const turn of methodDialogue){
+  const r=await request(turn.speaker==="A"?"method-a":"method-b",{action:"send",roomId:room,clientId:crypto.randomUUID(),payload:turn.payload,japanese:"fake sentence"});
+  assert.equal(r.status,200);
+ }
+ const received=(await request("method-b",null,"?room="+room)).data.messages;
+ assert.equal(received.length,methodDialogue.length);
+ assert.deepEqual(received.map(m=>m.japanese),methodDialogue.map(m=>compose(m.payload).japanese));
+ assert.ok(received.some(m=>m.user_id===first.id));
+ assert.ok(received.some(m=>m.user_id===second.id));
+ assert.equal((await request("method-a",{action:"send",roomId:room,clientId:crypto.randomUUID(),payload:{...defaultBlocks("consume"),slot:"school"}})).status,400);
+ const review=await handleStudy(externalRequest("/api/study",{storyId:"method:location",rating:"remembered"}),db,"method-a",true);
+ assert.equal(review.status,200);
+ const progress=await (await handleStudy(externalRequest("/api/study"),db,"method-b",true)).json();
+ assert.equal(progress.progress.length,0);
 });
 test.after(async()=>{sql.close();await rm(temporary,{recursive:true,force:true});});

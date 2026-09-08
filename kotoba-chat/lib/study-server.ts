@@ -1,5 +1,6 @@
 import type { Database } from "./chat-server";
 import { storyById } from "./stories";
+import { patternById } from "./method-blocks";
 import { FRONTEND_ORIGIN } from "./frontend-config";
 export async function handleStudy(req:Request,db:Database,authKey:string|null,external=false) {
  const json=(v:unknown,status=200)=>Response.json(v,{status,headers:{"Cache-Control":"no-store"}});
@@ -12,7 +13,7 @@ export async function handleStudy(req:Request,db:Database,authKey:string|null,ex
  if(!req.headers.get("content-type")?.includes("application/json"))return json({error:"invalid_input"},415);
  const raw=await req.text();if(raw.length>1024)return json({error:"invalid_input"},413);
  let body;try{body=JSON.parse(raw);}catch{return json({error:"invalid_input"},400);}
- if(typeof body?.storyId!=="string"||!Object.hasOwn(storyById,body.storyId)||!["again","remembered"].includes(body.rating))return json({error:"invalid_input"},400);
+ if(typeof body?.storyId!=="string"||!(Object.hasOwn(storyById,body.storyId)||(body.storyId.startsWith("method:")&&Object.hasOwn(patternById,body.storyId.slice(7))))||!["again","remembered"].includes(body.rating))return json({error:"invalid_input"},400);
  const row=await db.prepare("SELECT step,due_at,reviewed_at FROM study_progress WHERE auth_key=? AND story_id=?").bind(authKey,body.storyId).first<{step:number;due_at:number;reviewed_at:number}>();
  const now=Date.now();
  // Repeated early practice is welcome, but does not skip review intervals.

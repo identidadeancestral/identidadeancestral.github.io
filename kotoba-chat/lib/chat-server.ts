@@ -1,4 +1,5 @@
 import { avatars, compose, type MessagePayload } from "./vocabulary";
+import { canonicalBlocks } from "./method-blocks";
 import { FRONTEND_ORIGIN } from "./frontend-config";
 export type Statement = {bind(...values:unknown[]):Statement;first<T=Record<string,unknown>>():Promise<T|null>;all<T=Record<string,unknown>>():Promise<{results:T[]}>;run():Promise<unknown>};
 export type Database = {prepare(sql:string):Statement;batch(statements:Statement[]):Promise<unknown>};
@@ -12,6 +13,7 @@ const blocked="NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.user_id=? AND b.targe
 function payloadOf(raw:unknown):MessagePayload {
   if(!raw||typeof raw!=="object")return fail("invalid_message");
   const r=raw as Row;
+  if(r.kind==="blocks"){try{const value=canonicalBlocks(r);compose(value);return value;}catch{return fail("invalid_message");}}
   if(r.kind==="text") return {kind:"text",text:string(r.text,1,1500)};
   if(r.kind==="word"||r.kind==="story") {
     let value:MessagePayload;

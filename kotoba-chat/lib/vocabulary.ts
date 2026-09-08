@@ -1,8 +1,9 @@
 import { entryById } from "./study-data";
 import { formsFor, romanize, entryNote } from "./japanese";
 import { storyById } from "./stories";
+import { composeBlocks, type BlocksPayload, type BlockRole } from "./method-blocks";
 export type Lang = "pt" | "en";
-export type Word = { id:string; jp:string; kana:string; romaji:string; icon:string; pt:string; en:string; notePt?:string; noteEn?:string; grammar?:boolean; entryId?:string };
+export type Word = { id:string; jp:string; kana:string; romaji:string; icon:string; pt:string; en:string; notePt?:string; noteEn?:string; grammar?:boolean; entryId?:string; role?:BlockRole;functionPt?:string;functionEn?:string };
 const w = (id:string,jp:string,kana:string,romaji:string,icon:string,pt:string,en:string,notePt?:string,noteEn?:string,grammar=false):Word => ({id,jp,kana,romaji,icon,pt,en,notePt,noteEn,grammar});
 export const vocabulary: Word[] = [
   w("tree","木","き","ki","🌳","árvore","tree","Imagine os galhos nos traços de 木. Esta palavra se lê き; o kanji tem outras leituras em outras palavras.","Picture branches in 木. This word is read き; the kanji has other readings in other words."),
@@ -25,11 +26,11 @@ export const vocabulary: Word[] = [
   w("station","駅","えき","eki","🚉","estação","station"),
   w("japan","日本","にほん","Nihon","🇯🇵","Japão","Japan"),
   w("park","公園","こうえん","kōen","🏞️","parque","park"),
-  w("wo","を","を","o","🎯","objeto da ação","object of the action","Nestas frases, を marca o que você vê, come ou bebe. Pronuncia-se “o”. O alvo é uma convenção deste app.","In these sentences, を marks what you see, eat or drink. It is pronounced “o”. The target is this app’s convention.",true),
+  w("wo","を","を","o","🎯","objeto da ação","object of the action","Nestas frases, を marca o que você vê, come ou bebe. Pronuncia-se “o”.","In these sentences, を marks what you see, eat or drink. It is pronounced “o”.",true),
   w("ni","に","に","ni","➡️","destino, nesta frase","destination in this sentence","Com 行きます, に pode marcar o destino. Em outras construções, に tem outras funções.","With 行きます, に can mark the destination. In other constructions, に has other roles.",true),
-  w("wa","は","は","wa","🏷️","tema da frase","topic of the sentence","Como partícula, は se pronuncia “wa”. O símbolo destaca aquilo de que estamos falando.","As a particle, は is pronounced “wa”. The symbol marks what we are talking about.",true),
+  w("wa","は","は","wa","🏷️","tema da frase","topic of the sentence","Como partícula, は se pronuncia “wa”. Marca aquilo de que estamos falando.","As a particle, は is pronounced “wa”. It marks what we are talking about.",true),
   w("ga","が","が","ga","✨","marca do que se gosta, aqui","marks what is liked here","Nesta construção, が marca aquilo de que a pessoa gosta. Não é uma tradução fixa de が.","In this construction, が marks what the person likes. It is not a fixed translation of が.",true),
-  w("ka","か","か","ka","❔","pergunta","question","Aqui か torna a frase uma pergunta. Os ícones de partículas são pistas criadas para o app.","Here か makes the sentence a question. Particle icons are learning cues created for the app.",true),
+  w("ka","か","か","ka","❔","pergunta","question","Aqui か torna a frase uma pergunta.","Here か makes the sentence a question.",true),
   w("see","見ます","みます","mimasu","👀","vejo / vou ver","see / will see","見ます combina o kanji 見 com hiragana ます, uma terminação polida. Presente ou futuro dependem do contexto.","見ます combines 見 with hiragana ます, a polite ending. Present or future depends on context."),
   w("drink","飲みます","のみます","nomimasu","🥤","bebo / vou beber","drink / will drink"),
   w("eat","食べます","たべます","tabemasu","🍽️","como / vou comer","eat / will eat"),
@@ -53,8 +54,9 @@ export const templates = [
   {id:"where",pt:"Onde fica…?",en:"Where is…?",choices:["station","school","park","house"],particle:"wa",ending:"where"},
 ];
 export type VisualPayload = {kind:"visual";template:string;noun?:string;question?:boolean};
-export type MessagePayload = VisualPayload | {kind:"text";text:string} | {kind:"word";entry:string;form:string} | {kind:"story";story:string};
+export type MessagePayload = BlocksPayload | VisualPayload | {kind:"text";text:string} | {kind:"word";entry:string;form:string} | {kind:"story";story:string};
 export function compose(payload:MessagePayload): {japanese:string;tokens:string[];pt:string;en:string;romaji:string;words?:Word[]} {
+  if(payload.kind==="blocks")return composeBlocks(payload);
   if(payload.kind==="text") return {japanese:payload.text,tokens:[],pt:"",en:"",romaji:""};
   if(payload.kind==="word") {
     const entry=Object.hasOwn(entryById,payload.entry)?entryById[payload.entry]:undefined;

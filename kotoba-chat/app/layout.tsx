@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ojiisan Chat — Japonês em cenas",
-  description: "Converse em japonês com imagens na ordem da frase, cenas animadas e 300 palavras com flexões.",
+  title: "Ojiisan Chat — Japonês em blocos",
+  description: "Monte frases com o Método 100 Blocos. Verbos, palavras e partículas por função, explicações das mensagens e conversas em japonês.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
