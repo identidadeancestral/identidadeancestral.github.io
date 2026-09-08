@@ -36,3 +36,15 @@ export const frontendSessions=sqliteTable("frontend_sessions",{
 export const studyProgress=sqliteTable("study_progress",{
  authKey:text("auth_key").notNull(),storyId:text("story_id").notNull(),step:integer("step").notNull(),dueAt:integer("due_at").notNull(),reviewedAt:integer("reviewed_at").notNull(),attempts:integer("attempts").notNull(),
 },t=>[primaryKey({columns:[t.authKey,t.storyId]})]);
+export const emailAccounts=sqliteTable("email_accounts",{
+ authKey:text("auth_key").primaryKey(),email:text("email").notNull().unique(),
+ passwordHash:text("password_hash").notNull(),recoveryHash:text("recovery_hash").notNull(),sessionEpoch:integer("session_epoch").notNull().default(1),
+ createdAt:integer("created_at").notNull(),updatedAt:integer("updated_at").notNull(),
+});
+export const accountSessions=sqliteTable("account_sessions",{
+ tokenHash:text("token_hash").primaryKey(),authKey:text("auth_key").notNull().references(()=>emailAccounts.authKey),
+ expiresAt:integer("expires_at").notNull(),createdAt:integer("created_at").notNull(),sessionEpoch:integer("session_epoch").notNull(),
+},t=>[index("idx_account_sessions_auth").on(t.authKey),index("idx_account_sessions_expiry").on(t.expiresAt)]);
+export const accountRateLimits=sqliteTable("account_rate_limits",{
+ bucket:text("bucket").primaryKey(),hits:integer("hits").notNull(),expiresAt:integer("expires_at").notNull(),
+},t=>[index("idx_account_rates_expiry").on(t.expiresAt)]);

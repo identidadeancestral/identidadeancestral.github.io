@@ -7,8 +7,8 @@ import {join} from "node:path";
 import ts from "typescript";
 
 const temporary=await mkdtemp(join(tmpdir(),"kotoba-test-"));
-for(const name of ["adverb-data","study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server","method-blocks","block-analysis","method-dialogue"]) {
-  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(adverb-data|vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server|method-blocks|block-analysis|method-dialogue)"/g,'"./$1.mjs"');
+for(const name of ["passwords","account-session","account-server","adverb-data","study-data","japanese","stories","vocabulary","frontend-config","frontend-session","study-server","chat-server","method-blocks","block-analysis","method-dialogue"]) {
+  const source=(await readFile(new URL("../lib/"+name+".ts",import.meta.url),"utf8")).replace(/"\.\/(passwords|account-session|account-server|adverb-data|vocabulary|japanese|stories|study-data|frontend-config|frontend-session|chat-server|method-blocks|block-analysis|method-dialogue)"/g,'"./$1.mjs"');
   await writeFile(join(temporary,name+".mjs"),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
 }
 const {handleChat}=await import(join(temporary,"chat-server.mjs"));
@@ -16,12 +16,15 @@ const {compose,templates}=await import(join(temporary,"vocabulary.mjs"));
 const {entries,entryById}=await import(join(temporary,"study-data.mjs"));
 const {formsFor,romanize}=await import(join(temporary,"japanese.mjs"));
 const {stories}=await import(join(temporary,"stories.mjs"));
-const {FRONTEND_ORIGIN}=await import(join(temporary,"frontend-config.mjs"));
+const {FRONTEND_ORIGIN,SERVER_ORIGIN}=await import(join(temporary,"frontend-config.mjs"));
 const {issueFrontendCode,handleFrontendSession,frontendIdentity,randomToken,digest,preflight}=await import(join(temporary,"frontend-session.mjs"));
 const {handleStudy}=await import(join(temporary,"study-server.mjs"));
 const {defaultBlocks,methodPatterns,methodChoices,methodForms,hasForm,composeBlocks}=await import(join(temporary,"method-blocks.mjs"));
 const {blockWords}=await import(join(temporary,"block-analysis.mjs"));
 const {methodDialogue,suggestedReplies}=await import(join(temporary,"method-dialogue.mjs"));
+const {handleAccount}=await import(join(temporary,"account-server.mjs"));
+const {accountIdentity}=await import(join(temporary,"account-session.mjs"));
+const {verifyPassword}=await import(join(temporary,"passwords.mjs"));
 const sql=new DatabaseSync(":memory:");
 sql.exec("PRAGMA foreign_keys=ON");
 for(const file of (await readdir(new URL("../drizzle/",import.meta.url))).filter(f=>f.endsWith(".sql")).sort())sql.exec(await readFile(new URL("../drizzle/"+file,import.meta.url),"utf8"));
@@ -245,5 +248,87 @@ test("two consenting members exchange the method conversation with server-built 
  assert.equal(review.status,200);
  const progress=await (await handleStudy(externalRequest("/api/study"),db,"method-b",true)).json();
  assert.equal(progress.progress.length,0);
+});
+const accountReq=(body,token,origin=FRONTEND_ORIGIN)=>new Request(SERVER_ORIGIN+"/api/account",{method:body?"POST":"GET",headers:{Origin:origin,...(body?{"Content-Type":"application/json"}:{}),...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});
+const accountCall=async(body,token,legacy=null,ip="test-default",origin=FRONTEND_ORIGIN)=>{const r=await handleAccount(accountReq(body,token,origin),db,legacy,ip);return {status:r.status,data:await r.json()};};
+const password="Uma frase privada de teste 42!";
+let emailA,emailB,emailAKey,emailBKey;
+test("email registration normalizes identifiers and stores no usable credentials",async()=>{
+ assert.equal((await accountCall({action:"register",email:"broken",password})).status,400);
+ assert.equal((await accountCall({action:"register",email:"weak@example.test",password:"short"})).status,400);
+ emailA=(await accountCall({action:"register",email:" Aluno.A@Example.Test ",password},undefined,null,"test-a"));
+ assert.equal(emailA.status,201);assert.equal(emailA.data.email,"aluno.a@example.test");
+ assert.match(emailA.data.token,/^oj1_[A-Za-z0-9_-]{43}$/);assert.match(emailA.data.recoveryCode,/^[A-Za-z0-9_-]{43}$/);
+ const row=sql.prepare("SELECT * FROM email_accounts WHERE email=?").get("aluno.a@example.test");emailAKey=row.auth_key;
+ assert.match(row.password_hash,/^scrypt\$16384\$8\$5\$/);assert.ok(!Object.values(row).includes(password));assert.ok(!Object.values(row).includes(emailA.data.recoveryCode));
+ assert.equal(await verifyPassword(password,row.password_hash),true);
+ assert.ok(!JSON.stringify(sql.prepare("SELECT * FROM account_sessions").all()).includes(emailA.data.token));
+ assert.equal((await accountCall({action:"register",email:"ALUNO.A@example.test",password},undefined,null,"test-a")).status,409);
+ assert.equal((await accountCall({action:"register",email:"other@example.test",password,authKey:emailAKey},undefined,null,"test-b")).status,201);
+ assert.notEqual(sql.prepare("SELECT auth_key FROM email_accounts WHERE email=?").get("other@example.test").auth_key,emailAKey);
+});
+test("email sign-in validates passwords, origin, session expiry and logout",async()=>{
+ for(const email of ["aluno.a@example.test","missing@example.test"]){const r=await accountCall({action:"login",email,password:"Uma senha errada mas longa"});assert.equal(r.status,401);assert.equal(r.data.error,"credentials");}
+ const login=await accountCall({action:"login",email:"aluno.a@example.test",password});assert.equal(login.status,200);
+ assert.equal((await accountIdentity(accountReq(undefined,login.data.token),db)).auth_key,emailAKey);
+ assert.equal(await accountIdentity(accountReq(undefined,login.data.token,"https://untrusted.example"),db),null);
+ assert.equal((await accountCall({action:"login",email:"aluno.a@example.test",password},undefined,null,"test-origin","https://untrusted.example")).status,403);
+ assert.equal(await accountIdentity(accountReq(undefined,"oj1_"+randomToken()),db),null);
+ const status=await accountCall(undefined,login.data.token);assert.equal(status.data.email,"aluno.a@example.test");assert.equal(status.data.auth_key,undefined);
+ await accountCall({action:"logout"},login.data.token);assert.equal(await accountIdentity(accountReq(undefined,login.data.token),db),null);
+ const exp=await accountCall({action:"login",email:"aluno.a@example.test",password});sql.prepare("UPDATE account_sessions SET expires_at=? WHERE token_hash=?").run(Date.now()-1,await digest(exp.data.token));assert.equal(await accountIdentity(accountReq(undefined,exp.data.token),db),null);
+});
+test("two email accounts can chat with consent without ChatGPT identity",async()=>{
+ emailB=await accountCall({action:"register",email:"aluno.b@example.test",password},undefined,null,"test-b");assert.equal(emailB.status,201);
+ emailBKey=(await accountIdentity(accountReq(undefined,emailB.data.token),db)).auth_key;
+ const profileA=await create(emailAKey,"Aluno e-mail A"),profileB=await create(emailBKey,"Aluno e-mail B");
+ const room=(await request(emailAKey,{action:"dm",targetId:profileB.id})).data.roomId;
+ assert.equal((await request(emailAKey,{action:"send",roomId:room,clientId:crypto.randomUUID(),payload:{kind:"visual",template:"hello"}})).status,409);
+ assert.equal((await request(emailBKey,{action:"accept",roomId:room})).status,200);
+ const payload={...defaultBlocks("consume"),adverb:"sometimes"};
+ const req=new Request(SERVER_ORIGIN+"/api/chat",{method:"POST",headers:{Origin:FRONTEND_ORIGIN,Authorization:"Bearer "+emailA.data.token,"Content-Type":"application/json"},body:JSON.stringify({action:"send",roomId:room,clientId:crypto.randomUUID(),payload})});
+ const identity=await accountIdentity(req,db);assert.equal((await handleChat(req,db,identity.auth_key,true)).status,200);
+ const view=(await request(emailBKey,null,"?room="+room)).data;assert.equal(view.messages.at(-1).japanese,"コーヒーを時々飲みます。");
+ assert.equal((await request("auth-c",null,"?room="+room)).status,403);
+ assert.ok(!JSON.stringify(view).includes("aluno.a@example.test"));assert.ok(!JSON.stringify(view).includes("password_hash"));
+ assert.equal((await request(emailAKey)).data.me.id,profileA.id);
+});
+test("password changes revoke all sessions and require the current password",async()=>{
+ const wrong=await accountCall({action:"change",currentPassword:"not the actual password",password:"Outra frase privada de teste 88!"},emailB.data.token);assert.equal(wrong.status,401);
+ const other=await accountCall({action:"login",email:"aluno.b@example.test",password});
+ const changed=await accountCall({action:"change",currentPassword:password,password:"Outra frase privada de teste 88!"},emailB.data.token);assert.equal(changed.status,200);assert.equal(changed.data.signInAgain,true);
+ assert.equal(await accountIdentity(accountReq(undefined,emailB.data.token),db),null);assert.equal(await accountIdentity(accountReq(undefined,other.data.token),db),null);
+ assert.equal((await accountCall({action:"login",email:"aluno.b@example.test",password})).status,401);
+ assert.equal((await accountCall({action:"login",email:"aluno.b@example.test",password:"Outra frase privada de teste 88!"})).status,200);
+ assert.equal((await accountCall({action:"recover",email:"aluno.b@example.test",recoveryCode:emailB.data.recoveryCode,password})).status,400);
+ // Even a stale session left behind by failed cleanup cannot pass its epoch.
+ sql.prepare("INSERT INTO account_sessions VALUES(?,?,?,?,?)").run(await digest(other.data.token),emailBKey,Date.now()+60000,Date.now(),1);
+ assert.equal(await accountIdentity(accountReq(undefined,other.data.token),db),null);
+});
+test("recovery requires the private one-use code and revokes prior sessions",async()=>{
+ const account=await accountCall({action:"register",email:"recover@example.test",password},undefined,null,"test-recovery");
+ const fresh="Uma nova frase privada 2026!";
+ assert.equal((await accountCall({action:"recover",email:"recover@example.test",password:fresh,recoveryCode:randomToken()},undefined,null,"test-recovery")).status,400);
+ const recovered=await accountCall({action:"recover",email:"recover@example.test",password:fresh,recoveryCode:account.data.recoveryCode},undefined,null,"test-recovery");assert.equal(recovered.status,200);assert.equal(recovered.data.token,undefined);assert.notEqual(recovered.data.recoveryCode,account.data.recoveryCode);
+ assert.equal(await accountIdentity(accountReq(undefined,account.data.token),db),null);
+ assert.equal((await accountCall({action:"recover",email:"recover@example.test",password,recoveryCode:account.data.recoveryCode},undefined,null,"test-recovery")).status,400);
+ assert.equal((await accountCall({action:"login",email:"recover@example.test",password:fresh},undefined,null,"test-recovery")).status,200);
+});
+test("linking requires the old identity and preserves its profile, rooms and reviews",async()=>{
+ const before=(await request("auth-b")).data.me.id,oldRooms=(await request("auth-b")).data.rooms.map(r=>r.id);
+ await handleStudy(accountReq({storyId:"method:location",rating:"remembered"}),db,"auth-b",true);
+ assert.equal((await accountCall({action:"link",email:"legacy@example.test",password,authKey:"auth-b"},undefined,null,"test-link")).status,401);
+ const linked=await accountCall({action:"link",email:"legacy@example.test",password},undefined,"auth-b","test-link");assert.equal(linked.status,201);
+ const identity=await accountIdentity(accountReq(undefined,linked.data.token),db);assert.equal(identity.auth_key,"auth-b");
+ const after=(await request(identity.auth_key)).data;assert.equal(after.me.id,before);assert.deepEqual(after.rooms.map(r=>r.id),oldRooms);
+ const progress=await (await handleStudy(accountReq(),db,identity.auth_key,true)).json();assert.ok(progress.progress.some(r=>r.story_id==="method:location"));
+ assert.equal((await accountCall(undefined,undefined,"auth-b")).data.alreadyLinked,true);
+ assert.equal((await accountCall({action:"link",email:"replacement@example.test",password},undefined,"auth-b","test-link")).status,409);
+});
+test("authentication rate limits and body bounds apply before expensive work",async()=>{
+ for(let i=0;i<20;i++)assert.equal((await accountCall({action:"login",email:"rate@example.test",password},undefined,null,"test-rate")).status,401);
+ assert.equal((await accountCall({action:"login",email:"rate@example.test",password},undefined,null,"test-rate")).status,429);
+ const oversize=new Request(SERVER_ORIGIN+"/api/account",{method:"POST",headers:{Origin:FRONTEND_ORIGIN,"Content-Type":"application/json"},body:JSON.stringify({action:"register",email:"big@example.test",password:"x".repeat(9000)})});assert.equal((await handleAccount(oversize,db)).status,413);
+ const malformed=new Request(SERVER_ORIGIN+"/api/account",{method:"POST",headers:{Origin:FRONTEND_ORIGIN,"Content-Type":"application/json"},body:"{"});assert.equal((await handleAccount(malformed,db)).status,400);
 });
 test.after(async()=>{sql.close();await rm(temporary,{recursive:true,force:true});});

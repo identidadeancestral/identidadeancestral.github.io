@@ -1,0 +1,37 @@
+"use client";
+import { useEffect, useId, useState } from "react";
+import { Eye, EyeOff, Copy, KeyRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+export type AccountMode="login"|"register"|"link"|"change"|"recover";
+export type AccountResult={token?:string;expiresAt?:number;email?:string;recoveryCode?:string;signInAgain?:boolean};
+const errors:Record<string,string>={credentials:"E-mail ou senha incorretos. Confira e tente novamente.",email:"Digite um e-mail válido.",password_length:"Use uma senha de 15 a 128 caracteres. Pode ser uma frase.",account_unavailable:"Não foi possível cadastrar com estes dados. Tente entrar ou recuperar sua conta.",recovery:"Confira o e-mail e o código de recuperação.",slow_down:"Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.",sign_in:"Entre novamente para continuar.",unavailable:"Não foi possível conectar agora. Tente novamente.",origin:"Abra o endereço oficial do Ojiisan Chat para continuar."};
+export default function AccountDialog({open,onOpenChange,mode,setMode,email:accountEmail,onSubmit,onLegacy}:{open:boolean;onOpenChange:(open:boolean)=>void;mode:AccountMode;setMode:(mode:AccountMode)=>void;email?:string;onSubmit:(body:Record<string,string>)=>Promise<AccountResult>;onLegacy:()=>Promise<void>}) {
+ const id=useId(),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[confirm,setConfirm]=useState(""),[current,setCurrent]=useState(""),[recovery,setRecovery]=useState(""),[visible,setVisible]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(""),[issued,setIssued]=useState(""),[copied,setCopied]=useState(false),[signInAgain,setSignInAgain]=useState(false);
+ // Reset on opening or choosing a form, not when a successful registration
+ // updates the account email: that must not hide the new recovery code.
+ useEffect(()=>{if(open)setEmail(accountEmail||"");setPassword("");setConfirm("");setCurrent("");setRecovery("");setIssued("");setError("");setVisible(false);setCopied(false);},[open,mode]);
+ const title=mode==="register"?"Criar conta":mode==="link"?"Definir e-mail e senha":mode==="change"?"Alterar senha":mode==="recover"?"Recuperar conta":"Entrar no Ojiisan Chat";
+ const submit=async(e:React.FormEvent)=>{e.preventDefault();setError("");if(mode!=="login"&&password!==confirm){setError("As senhas precisam ser iguais.");return;}setBusy(true);try{const r=await onSubmit({action:mode,email,password,...(mode==="change"?{currentPassword:current}:{}),...(mode==="recover"?{recoveryCode:recovery.trim()}: {})});setPassword("");setConfirm("");setCurrent("");setRecovery("");if(r.recoveryCode){setIssued(r.recoveryCode);setCopied(false);setSignInAgain(!!r.signInAgain);}else onOpenChange(false);}catch(e){setError(errors[e instanceof Error?e.message:""]||errors.unavailable);}finally{setBusy(false);}};
+ const passwordField=(label:string,value:string,set:(v:string)=>void,suffix:string,autoComplete:string)=><div className="field"><Label htmlFor={id+suffix}>{label}</Label><div className="account-password"><Input id={id+suffix} type={visible?"text":"password"} value={value} onChange={e=>set(e.target.value)} autoComplete={autoComplete} required minLength={mode==="login"||suffix==="-current"?undefined:15} maxLength={128} spellCheck={false} autoCapitalize="none"/><Button variant="ghost" type="button" size="icon" onClick={()=>setVisible(!visible)} aria-label={visible?"Esconder senha":"Mostrar senha"}>{visible?<EyeOff/>:<Eye/>}</Button></div></div>;
+ return <Dialog open={open} onOpenChange={v=>{if(!busy)onOpenChange(v);}}><DialogContent className="account-dialog"><DialogHeader><DialogTitle>{issued?"Guarde seu código de recuperação":title}</DialogTitle><DialogDescription>{issued?"Este código permite definir uma nova senha se você esquecer a atual. Guarde em um lugar privado.":mode==="link"?"Seu perfil e suas conversas continuam os mesmos. Nas próximas entradas, use apenas o e-mail e a senha que definir aqui.":mode==="recover"?"Use o código que você guardou ao criar a conta ou alterar a senha.":mode==="change"?"Confirme sua senha atual. Depois da alteração, entre novamente nos seus aparelhos.":"Use sua conta do Ojiisan Chat. Seu e-mail não aparece para outras pessoas."}</DialogDescription></DialogHeader>
+ {issued?<div className="account-recovery-result"><KeyRound aria-hidden="true"/><code>{issued}</code><Button variant="outline" onClick={async()=>{try{await navigator.clipboard.writeText(issued);setCopied(true);}catch{setError("Selecione o código acima e copie para guardar.");}}}><Copy/>{copied?"Código copiado":"Copiar código"}</Button>{error&&<p className="account-error" role="alert">{error}</p>}<Button onClick={()=>{setIssued("");if(signInAgain)setMode("login");else onOpenChange(false);}}>{signInAgain?"Entrar com a nova senha":"Continuar para o chat"}</Button></div>:<>
+ {(mode==="login"||mode==="register")&&<Tabs value={mode} onValueChange={v=>{if(!busy)setMode(v as AccountMode);}}><TabsList className="account-tabs"><TabsTrigger value="login">Entrar</TabsTrigger><TabsTrigger value="register">Criar conta</TabsTrigger></TabsList></Tabs>}
+ <form className="account-form" onSubmit={submit}>
+ {mode==="change"?<p className="account-email">{accountEmail}</p>:<div className="field"><Label htmlFor={id+"-email"}>E-mail</Label><Input id={id+"-email"} type="email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/></div>}
+ {mode==="change"&&passwordField("Senha atual",current,setCurrent,"-current","current-password")}
+ {mode==="recover"&&<div className="field"><Label htmlFor={id+"-recovery"}>Código de recuperação</Label><Input id={id+"-recovery"} value={recovery} onChange={e=>setRecovery(e.target.value)} required autoComplete="off" autoCapitalize="none" spellCheck={false} maxLength={60}/></div>}
+ {passwordField(mode==="login"?"Senha":"Nova senha",password,setPassword,"-password",mode==="login"?"current-password":"new-password")}
+ {mode!=="login"&&<><p className="account-help">Use 15 ou mais caracteres. Uma frase é mais fácil de lembrar.</p>{passwordField("Confirmar senha",confirm,setConfirm,"-confirm","new-password")}</>}
+ {error&&<p className="account-error" role="alert">{error}</p>}
+ <Button type="submit" disabled={busy} size="lg">{busy?"Aguarde…":title}</Button>
+ {mode==="login"&&<Button type="button" variant="ghost" onClick={()=>setMode("recover")} disabled={busy}>Esqueci minha senha</Button>}
+ {(mode==="recover"||mode==="link")&&<Button type="button" variant="ghost" onClick={()=>setMode("login")} disabled={busy}>Voltar para entrar</Button>}
+ </form>
+ {(mode==="login"||mode==="register")&&<details className="legacy-account"><summary>Já usava a versão anterior?</summary><p>Vincule seu perfil antigo para manter as conversas. A confirmação da conta anterior acontece uma única vez; depois você usa e-mail e senha.</p><Button variant="outline" disabled={busy} onClick={async()=>{setBusy(true);try{await onLegacy();}catch{setError(errors.unavailable);}finally{setBusy(false);}}}>Vincular meu perfil anterior</Button></details>}
+ </>}
+ </DialogContent></Dialog>;
+}

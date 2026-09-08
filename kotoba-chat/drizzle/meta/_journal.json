@@ -15,6 +15,13 @@
       "when": 1788863848712,
       "tag": "0001_whole_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788904990330,
+      "tag": "0002_narrow_toad",
+      "breakpoints": true
     }
   ]
 }

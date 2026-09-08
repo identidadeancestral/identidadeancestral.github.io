@@ -12,7 +12,10 @@ Chat para aprender japonês com outras pessoas, baseado no Método 100 Blocos de
 - Roteiro guiado de apresentação, gostos e café; os personagens são exemplos, não usuários online.
 - Revisões dos dez moldes e das quatro histórias salvas por conta, com intervalos de 10 minutos a 60 dias conforme a autoavaliação.
 - Leitura lenta por síntese de voz quando o aparelho disponibiliza uma voz japonesa.
-- Entrada com ChatGPT e criação de perfil com apelido, avatar, idioma e nível.
+- Cadastro e entrada com e-mail e senha próprios do Ojiisan Chat; perfil com apelido, avatar, idioma e nível.
+- Recuperação por código privado, alteração de senha e saída da conta. O código é entregue no cadastro e trocado após recuperar ou alterar a senha.
+- Vinculação opcional de um perfil da versão anterior, sem recriar conversas nem revisões.
+- Lista de pessoas com rolagem própria e áreas separadas para o link do app, prática e perfil, inclusive no celular.
 - Pessoas disponíveis, convites com aceite e conversas individuais.
 - Grupos com até 25 participantes, convites, saída e administração.
 - Mensagens e perfis persistidos no servidor; histórico com paginação.
@@ -44,13 +47,15 @@ A configuração de hospedagem fica em `.openai/hosting.json`. As migrações em
 
 ## Autenticação e publicação
 
-A publicação utiliza o Sites e a autenticação gerenciada “Entrar com ChatGPT”. O servidor confia nos cabeçalhos de identidade encaminhados pelo serviço de hospedagem. Não exponha este servidor diretamente com cabeçalhos de identidade fornecidos pelo visitante. Ao migrar para outro provedor, implemente e verifique a autenticação desse provedor antes de abrir o acesso.
+O acesso principal é por e-mail e senha, em `/api/account`, tanto no endereço GitHub quanto no Sites. As contas ficam no D1. As senhas são protegidas por `node:crypto` scrypt (N=16384, r=8, p=5), sal aleatório de 16 bytes e comparação de tempo constante. No máximo dois hashes são calculados simultaneamente por isolate, com limites adicionais persistidos por IP e identificador de conta. Não são registrados senhas, códigos ou tokens nos logs.
 
-A interface está preparada para `https://identidadeancestral.github.io/ojiisan-chat/`. GitHub Pages entrega HTML, CSS e JavaScript; o servidor e o banco continuam no Sites. Os endereços permitidos estão em `lib/frontend-config.ts`. O conteúdo da raiz do site Identidade Ancestral é preservado.
+A interface principal é `https://identidadeancestral.github.io/ojiisan-chat/`. GitHub Pages entrega HTML, CSS e JavaScript; o servidor e o banco continuam no Sites. O conteúdo da raiz do site Identidade Ancestral é preservado.
 
-O botão Entrar abre a autenticação do Sites por navegação de página inteira. Após a autenticação gerenciada, `/connect` emite um código de uso único, válido por dois minutos, vinculado a uma prova PKCE S256. O retorno usa um destino fixo e um fragmento que o cliente remove antes da troca. O cliente valida o estado da tentativa e troca o código usando o verificador temporário desta aba. O servidor aceita CORS apenas da origem GitHub configurada.
+A senha aceita de 15 a 128 caracteres, incluindo espaços e Unicode, sem truncamento nem remoção de espaços. O e-mail é um identificador privado de entrada: não se afirma que a caixa de entrada foi verificada. Não há serviço de envio de e-mails configurado. A recuperação funciona com um código aleatório privado entregue na criação da conta; não promete enviar links por e-mail. O código só é armazenado como hash, é de uso único e muda após recuperação ou alteração de senha. Depois de redefinir a senha, o usuário entra novamente.
 
-As sessões da interface GitHub expiram em oito horas e são revogadas ao sair. O servidor guarda somente hashes dos códigos e tokens; a aba guarda o token opaco em `sessionStorage`. Não coloque credenciais de infraestrutura no frontend. Cada requisição continua verificando identidade, participação na conversa e bloqueios no servidor. Ao sair ou trocar de sessão, os dados da tela são descartados.
+As sessões usam tokens opacos de oito horas, cujos hashes ficam no banco. A aba retém somente o token em `sessionStorage`; a senha e o código de recuperação não são persistidos no navegador. Cada consulta de identidade verifica também a versão da credencial, invalidando imediatamente sessões antigas ao alterar a senha, inclusive se uma limpeza posterior falhar. As requisições continuam validando participação, aceite e bloqueios no servidor. APIs de conta aceitam somente as origens conhecidas; o CORS externo permite apenas o GitHub configurado.
+
+A opção secundária “Vincular meu perfil anterior” usa a confirmação da identidade da versão antiga uma única vez. O fluxo existente de `/connect` e PKCE permanece somente para essa transição. Uma sessão antiga ainda válida também pode definir a nova senha. O vínculo reutiliza a identidade já autenticada; nunca procura nem assume um perfil antigo apenas porque foi digitado o mesmo e-mail. Ao definir a senha, os tokens antigos são revogados e a identidade legada deixa de autorizar chat e revisões daquela conta. Novos usuários não precisam de ChatGPT.
 
 ## Comportamento e limites
 
@@ -78,3 +83,9 @@ A estrutura de treino aproveita as ideias do ebook do autor (v1, 175 páginas): 
 As regras foram conferidas com as [notas gramaticais Irodori, Japan Foundation](https://www.irodori.jpf.go.jp/assets/data/Grammar_all.pdf), incluindo as tabelas de [forma て](https://www.irodori.jpf.go.jp/assets/data/elementary01/pdf/Y_L01.pdf) e [passado simples](https://www.irodori.jpf.go.jp/assets/data/elementary01/pdf/Y_L08.pdf). Trata-se de uma seleção de vocabulário para expansão, sem alegação de corresponder integralmente a um nível JLPT.
 
 A expansão de advérbios usa exemplos originais. A frequência, a ordem variável antes do verbo e os padrões negativos foram conferidos nas notas Irodori da Japan Foundation, pp. 13 e 33–35 do PDF citado acima. As seleções de combinação dos moldes são limitadas para preservar o sentido; não há conversão livre de qualquer sequência de palavras em uma frase correta. O endereço público principal e canônico é https://identidadeancestral.github.io/ojiisan-chat/.
+
+## Verificação do acesso por senha
+
+Testes locais com perfis sintéticos verificam cadastro, login, envio com aceite, rejeição de terceiros, saída, expiração, alteração de senha, revogação por versão de credencial, recuperação de uso único, vínculo de histórico antigo, limites de tentativas e tamanho do corpo da requisição. Não criam contas de teste na publicação. O ajuste para celular foi conferido no código; não foi realizada inspeção visual no navegador.
+
+Referências: [armazenamento de senhas — OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) e [node:crypto em Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/nodejs/crypto/).
