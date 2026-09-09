@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {SUPABASE_API} from '../lib/frontend-config.ts';
+import {assertApiCsp} from '../github/csp.mjs';
+const base=(process.env.OJIISAN_API_BASE||SUPABASE_API).replace(/\/$/,'');
+const html=await readFile('github-dist/index.html','utf8');assertApiCsp(html,base);
+const script=html.match(/<script[^>]*\bsrc="\/ojiisan-chat\/([^"?]+)"/);
+assert.ok(script,'Missing application bundle');
+const bundle=await readFile('github-dist/'+script[1],'utf8');
+assert.ok(bundle.includes(base),'The bundle must contain the exact configured API URL');
+console.log('PASS production HTML CSP and bundled API origin agree');

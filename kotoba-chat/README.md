@@ -92,6 +92,9 @@ Referências: [armazenamento de senhas — OWASP](https://cheatsheetseries.owasp
 
 ## Backend Supabase
 
+Disponibilidade, correção do CSP, tratamento de erros do gateway e verificação
+periódica estão documentados em [docs/availability.md](docs/availability.md).
+
 A API independente está em `backend/supabase/`, no projeto Ojiisan Chat
 `yediixixaxqcwzymhcxf`, região São Paulo, plano gratuito autorizado.
 A URL pública da função é

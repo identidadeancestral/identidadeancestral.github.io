@@ -13,7 +13,8 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
-    "build:github": "vite build --config github/vite.config.ts"
+    "build:github": "vite build --config github/vite.config.ts",
+    "postbuild:github": "node --experimental-strip-types scripts/check-github-build.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
