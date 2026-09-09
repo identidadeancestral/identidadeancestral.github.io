@@ -89,3 +89,17 @@ A expansão de advérbios usa exemplos originais. A frequência, a ordem variáv
 Testes locais com perfis sintéticos verificam cadastro, login, envio com aceite, rejeição de terceiros, saída, expiração, alteração de senha, revogação por versão de credencial, recuperação de uso único, vínculo de histórico antigo, limites de tentativas e tamanho do corpo da requisição. Não criam contas de teste na publicação. O ajuste para celular foi conferido no código; não foi realizada inspeção visual no navegador.
 
 Referências: [armazenamento de senhas — OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) e [node:crypto em Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/nodejs/crypto/).
+
+## Migração de backend em preparação
+
+A implementação independente para Supabase está em `backend/supabase/`.
+Ela preserva as APIs, os blocos, a autenticação por senha e os identificadores
+existentes, usando PostgreSQL e uma Edge Function. A publicação ativa ainda
+não foi transferida. Consulte `backend/supabase/README.md` para a sequência de
+importação, verificação e mudança do frontend. A conexão do Supabase foi
+confirmada, mas seus comandos não foram disponibilizados à sessão de preparação.
+
+Foram adicionados dez testes com PostgreSQL via PGlite: acesso privado às tabelas,
+transações, cadastro e senha, consentimento, grupos, bloqueios, estudo, recuperação,
+vínculo de perfil antigo e importação integral com rollback. Os dados de produção
+não fazem parte deste repositório.

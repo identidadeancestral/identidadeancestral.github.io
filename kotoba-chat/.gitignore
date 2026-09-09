@@ -43,3 +43,5 @@ next-env.d.ts
 /work/
 
 *.tsbuildinfo
+/backend/supabase/dist/
+/.migration-data/

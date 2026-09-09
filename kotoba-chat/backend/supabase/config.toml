@@ -1,0 +1,3 @@
+# Our API checks opaque email sessions. A Supabase JWT gate would reject them.
+[functions.ojiisan-api]
+verify_jwt = false

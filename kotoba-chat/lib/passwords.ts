@@ -1,4 +1,5 @@
 import { scrypt, randomBytes, timingSafeEqual } from "node:crypto";
+import { Buffer } from "node:buffer";
 
 // OWASP scrypt configuration with a bounded 16 MiB working set per hash.
 // Native node:crypto is supported by the Worker's nodejs_compat runtime.

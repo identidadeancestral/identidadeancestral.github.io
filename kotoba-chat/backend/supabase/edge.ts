@@ -1,0 +1,11 @@
+import postgres from "postgres";
+import { PostgresDatabase, type Query, type Transaction } from "./postgres-adapter";
+import { createApi } from "./router";
+declare const Deno:{env:{get:(key:string)=>string|undefined};serve:(handler:(req:Request)=>Promise<Response>)=>void};
+const connection=Deno.env.get("OJIISAN_DATABASE_URL")||Deno.env.get("SUPABASE_DB_URL");
+if(!connection)throw new Error("Database connection is not configured");
+const sql=postgres(connection,{prepare:false,max:1,idle_timeout:20,connect_timeout:10,ssl:"require",types:{bigint:postgres.BigInt}});
+const query:Query=async(text,values)=>Array.from(await sql.unsafe(text,values as never[]));
+const transaction:Transaction=async <T>(work:(q:Query)=>Promise<T>)=>{let result:T;await sql.begin(async tx=>{result=await work(async(text,values)=>Array.from(await tx.unsafe(text,values as never[])));});return result!;};
+const db=new PostgresDatabase(query,transaction);
+Deno.serve(createApi(db,{legacyBridge:Deno.env.get("OJIISAN_LEGACY_BRIDGE")==="true"}));
