@@ -20,7 +20,7 @@ async function legacyIdentity(req:Request,db:Database,options:Options) {
  if(!options.legacyBridge||!/^Bearer [A-Za-z0-9_-]{43}$/.test(token||""))return null;
  // Prove ownership of an imported profile through the old authenticated API.
  // Email is never proof, and ordinary email sessions never call the old site.
- const response=await (options.fetcher||fetch)(LEGACY_ORIGIN+"/api/chat",{headers:{Origin:FRONTEND_ORIGIN,Authorization:token!},signal:AbortSignal.timeout(7000)});
+ const response=await (options.fetcher||fetch)(LEGACY_ORIGIN+"/api/legacy-profile",{headers:{Origin:FRONTEND_ORIGIN,Authorization:token!},signal:AbortSignal.timeout(7000)});
  if(!response.ok)return null;
  const data=await response.json();if(typeof data?.me?.id!=="string")return null;
  const row=await db.prepare("SELECT auth_key FROM profiles WHERE id=?").bind(data.me.id).first<{auth_key:string}>();return row?.auth_key||null;
@@ -46,9 +46,9 @@ export function createApi(db:Database,options:Options={}) {
    }
    if(path==="/api/account"){
     const legacy=await legacyIdentity(req,db,options);
-    // Do not trust arbitrary forwarded-IP headers. Use a conservative global
-    // limit until the deployment's verified client-IP contract is confirmed.
-    return handleAccount(req,db,legacy,"supabase-edge");
+    // Do not trust arbitrary forwarded-IP headers. Bound total work globally,
+    // with a separate 20-attempt per-email limit and two hashes per isolate.
+    return handleAccount(req,db,legacy,"supabase-edge",{attempts:600,registrations:100});
    }
    const identity=await accountIdentity(req,db);
    return cors(req,path==="/api/chat"?await handleChat(req,db,identity?.auth_key||null,true):await handleStudy(req,db,identity?.auth_key||null,true));

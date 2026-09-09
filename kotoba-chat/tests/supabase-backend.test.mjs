@@ -109,7 +109,7 @@ test('the optional bridge links only the verified imported profile and cannot ov
  const token='L'.repeat(43),id='imported-profile-id',key='legacy-imported-key',now=Date.now();
  await db.prepare('INSERT INTO profiles(id,auth_key,nickname,language,level,avatar,available,last_seen,created_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,key,'Perfil antigo','Português','beginner','🌱',1,now,now).run();
  let checks=0;
- const bridge=createApi(db,{legacyBridge:true,fetcher:async(url,options)=>{checks++;assert.equal(url,'https://kotoba-chat-identidadeancestral.aaaaasssdd.chatgpt.site/api/chat');return options.headers.Authorization==='Bearer '+token?Response.json({me:{id}}):Response.json({error:'sign_in'},{status:401});}});
+ const bridge=createApi(db,{legacyBridge:true,fetcher:async(url,options)=>{checks++;assert.equal(url,'https://kotoba-chat-identidadeancestral.aaaaasssdd.chatgpt.site/api/legacy-profile');return options.headers.Authorization==='Bearer '+token?Response.json({me:{id}}):Response.json({error:'sign_in'},{status:401});}});
  const linked=await bridge(new Request(base+'/api/account',{method:'POST',headers:{Origin:origin,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({action:'link',email:'imported@example.test',password,authKey:'untrusted-key'})}));
  assert.equal(linked.status,201);const value=await linked.json();assert.equal((await chat(value.token)).data.me.id,id);
  const normalChecks=checks;await chat(value.token,{action:'heartbeat'});assert.equal(checks,normalChecks);

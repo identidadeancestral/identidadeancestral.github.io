@@ -30,7 +30,7 @@ const clearSessions=(db:Database,key:string):Statement[]=>[
  db.prepare("DELETE FROM frontend_sessions WHERE auth_key=?").bind(key),
  db.prepare("DELETE FROM frontend_codes WHERE auth_key=?").bind(key),
 ];
-export async function handleAccount(req:Request,db:Database,legacyKey:string|null=null,clientIp="unknown") {
+export async function handleAccount(req:Request,db:Database,legacyKey:string|null=null,clientIp="unknown",limits={attempts:60,registrations:10}) {
  const reply=(body:unknown,status=200)=>{const response=cors(req,Response.json(body,{status}));if(status===429)response.headers.set("Retry-After","60");return response;};
  try{
   if(!accountOriginAllowed(req))return reply({error:"origin"},403);
@@ -51,7 +51,7 @@ export async function handleAccount(req:Request,db:Database,legacyKey:string|nul
    return reply({ok:true});
   }
   if(!["register","login","link","change","recover"].includes(String(b.action)))return reply({error:"invalid_input"},400);
-  await limit(db,"ip:"+clientIp,60,15*60*1000);
+  await limit(db,"ip:"+clientIp,limits.attempts,15*60*1000);
   await db.batch([db.prepare("DELETE FROM account_rate_limits WHERE expires_at<=?").bind(Date.now()),db.prepare("DELETE FROM account_sessions WHERE expires_at<=?").bind(Date.now())]);
   const email=b.action==="change"?identity?.email:normalizedEmail(b.email);
   if(!email)return reply({error:b.action==="change"?"sign_in":"email"},b.action==="change"?401:400);
@@ -69,7 +69,7 @@ export async function handleAccount(req:Request,db:Database,legacyKey:string|nul
   }
   if(b.action==="register"||b.action==="link"){
    if(b.action==="link"&&!legacyKey)return reply({error:"sign_in"},401);
-   await limit(db,"registration:"+clientIp,10,60*60*1000);
+   await limit(db,"registration:"+clientIp,limits.registrations,60*60*1000);
    // Email is a private login identifier, never proof of ownership of an old
    // profile. Linking requires the existing, authenticated legacy identity.
    const key=b.action==="link"?legacyKey!:"email:"+crypto.randomUUID();

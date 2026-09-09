@@ -47,9 +47,9 @@ A configuração de hospedagem fica em `.openai/hosting.json`. As migrações em
 
 ## Autenticação e publicação
 
-O acesso principal é por e-mail e senha, em `/api/account`, tanto no endereço GitHub quanto no Sites. As contas ficam no D1. As senhas são protegidas por `node:crypto` scrypt (N=16384, r=8, p=5), sal aleatório de 16 bytes e comparação de tempo constante. No máximo dois hashes são calculados simultaneamente por isolate, com limites adicionais persistidos por IP e identificador de conta. Não são registrados senhas, códigos ou tokens nos logs.
+O acesso principal é por e-mail e senha, em `/api/account`, tanto no endereço GitHub quanto no Sites. As contas ficam no PostgreSQL privado do Supabase. As senhas são protegidas por `node:crypto` scrypt (N=16384, r=8, p=5), sal aleatório de 16 bytes e comparação de tempo constante. No máximo dois hashes são calculados simultaneamente por isolate, com limites adicionais persistidos por identificador de conta e capacidade global. Não são registrados senhas, códigos ou tokens nos logs.
 
-A interface principal é `https://identidadeancestral.github.io/ojiisan-chat/`. GitHub Pages entrega HTML, CSS e JavaScript; o servidor e o banco continuam no Sites. O conteúdo da raiz do site Identidade Ancestral é preservado.
+A interface principal é `https://identidadeancestral.github.io/ojiisan-chat/`. GitHub Pages entrega HTML, CSS e JavaScript; o servidor e o banco ficam no Supabase, em São Paulo. O endereço Sites encaminha ao frontend principal; clientes antigos usam uma ponte para a mesma API, sem novas escritas no D1. O conteúdo da raiz do site Identidade Ancestral é preservado.
 
 A senha aceita de 15 a 128 caracteres, incluindo espaços e Unicode, sem truncamento nem remoção de espaços. O e-mail é um identificador privado de entrada: não se afirma que a caixa de entrada foi verificada. Não há serviço de envio de e-mails configurado. A recuperação funciona com um código aleatório privado entregue na criação da conta; não promete enviar links por e-mail. O código só é armazenado como hash, é de uso único e muda após recuperação ou alteração de senha. Depois de redefinir a senha, o usuário entra novamente.
 
@@ -90,16 +90,19 @@ Testes locais com perfis sintéticos verificam cadastro, login, envio com aceite
 
 Referências: [armazenamento de senhas — OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) e [node:crypto em Cloudflare Workers](https://developers.cloudflare.com/workers/runtime-apis/nodejs/crypto/).
 
-## Migração de backend em preparação
+## Backend Supabase
 
-A implementação independente para Supabase está em `backend/supabase/`.
-Ela preserva as APIs, os blocos, a autenticação por senha e os identificadores
-existentes, usando PostgreSQL e uma Edge Function. A publicação ativa ainda
-não foi transferida. Consulte `backend/supabase/README.md` para a sequência de
-importação, verificação e mudança do frontend. A conexão do Supabase foi
-confirmada, mas seus comandos não foram disponibilizados à sessão de preparação.
+A API independente está em `backend/supabase/`, no projeto Ojiisan Chat
+`yediixixaxqcwzymhcxf`, região São Paulo, plano gratuito autorizado.
+A URL pública da função é
+`https://yediixixaxqcwzymhcxf.supabase.co/functions/v1/ojiisan-api`.
+Preserva as APIs, os blocos, a autenticação por senha e os identificadores
+existentes. Consulte `backend/supabase/README.md` para publicação e transição.
+Os dados de produção não fazem parte deste repositório.
 
-Foram adicionados dez testes com PostgreSQL via PGlite: acesso privado às tabelas,
-transações, cadastro e senha, consentimento, grupos, bloqueios, estudo, recuperação,
-vínculo de perfil antigo e importação integral com rollback. Os dados de produção
-não fazem parte deste repositório.
+Foram verificados 36 testes locais, incluindo dez com PostgreSQL via PGlite e
+dois de congelamento/encaminhamento. O runtime publicado também passou por
+cadastro, login, mensagens com aceite, grupos, bloqueio de terceiros, estudo,
+recuperação e revogação usando três contas sintéticas removidas ao terminar.
+Isso verifica os fluxos de servidor; não é teste de carga nem inspeção visual
+em todos os navegadores.

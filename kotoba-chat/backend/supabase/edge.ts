@@ -8,4 +8,4 @@ const sql=postgres(connection,{prepare:false,max:1,idle_timeout:20,connect_timeo
 const query:Query=async(text,values)=>Array.from(await sql.unsafe(text,values as never[]));
 const transaction:Transaction=async <T>(work:(q:Query)=>Promise<T>)=>{let result:T;await sql.begin(async tx=>{result=await work(async(text,values)=>Array.from(await tx.unsafe(text,values as never[])));});return result!;};
 const db=new PostgresDatabase(query,transaction);
-Deno.serve(createApi(db,{legacyBridge:Deno.env.get("OJIISAN_LEGACY_BRIDGE")==="true"}));
+Deno.serve(createApi(db,{legacyBridge:Deno.env.get("OJIISAN_LEGACY_BRIDGE")!=="false"}));

@@ -1,7 +1,8 @@
 # Backend independente do Ojiisan Chat
 
-Estado: implementação preparada; não foi conectada à publicação ativa. O app
-continua usando o servidor Sites até a conclusão dos passos abaixo.
+Projeto publicado: `yediixixaxqcwzymhcxf`, Ojiisan Chat, São Paulo (`sa-east-1`).
+Plano gratuito de US$ 0/mês autorizado pelo proprietário.
+API: `https://yediixixaxqcwzymhcxf.supabase.co/functions/v1/ojiisan-api`.
 
 ## O que muda
 
@@ -36,8 +37,8 @@ sessão; nunca recebe conexão do banco, segredo do projeto ou chave de serviço
    um projeto dedicado ao Ojiisan Chat; não modificar tabelas de outros aplicativos.
    Confirmar os limites e custos reais da conta antes de assumir um plano.
 2. Aplicar `schema.sql` somente em um destino sem schema `ojiisan`. Conferir as
-   tabelas, permissões e os avisos do Supabase. Registrar a migração com a CLI
-   usando os comandos verificados da versão instalada, sem inventar um timestamp.
+   tabelas, permissões e os avisos do Supabase. A implantação inicial foi registrada com `apply_migration` em
+   `create_ojiisan_private_backend`. Não reaplicar nem editar a migração publicada.
 3. Gerar o bundle com `node scripts/build-supabase.mjs` e publicar `ojiisan-api`.
    A conexão `SUPABASE_DB_URL` é fornecida pelo ambiente. Se for necessário usar
    o pooler, definir `OJIISAN_DATABASE_URL` como segredo somente no servidor.
@@ -55,8 +56,8 @@ sessão; nunca recebe conexão do banco, segredo do projeto ou chave de serviço
    vínculos, hashes e sequência de mensagens. O importador recusa um destino
    não vazio e reverte tudo diante de um erro. Nunca sobrescrever dados novos
    do destino com um export antigo.
-7. Para o perfil legado que ainda não tem senha, habilitar temporariamente
-   `OJIISAN_LEGACY_BRIDGE=true`: a confirmação anterior prova a posse do ID do
+7. Para o perfil legado que ainda não tem senha, a ponte fica habilitada por padrão
+   (`OJIISAN_LEGACY_BRIDGE=false` desabilita): a confirmação anterior prova a posse do ID do
    perfil importado, sem usar e-mail como prova. Após definir a senha, o acesso
    normal não chama o Sites. Desabilitar a ponte após concluir os vínculos.
 8. Obter a URL real da função do projeto. Compilar o frontend com
@@ -73,16 +74,35 @@ sessão; nunca recebe conexão do banco, segredo do projeto ou chave de serviço
 
 A identidade de IP encaminhada pelo Supabase precisa ser confirmada antes de
 ativar limites por IP: cabeçalhos enviados pelo cliente não são confiáveis. Até
-lá, a API aplica o limite global conservador já existente (60 tentativas a cada
-15 minutos, 10 cadastros por hora), além de limites por e-mail. Ajustar essa
-capacidade e a proteção contra abuso antes de uma abertura para muitos usuários.
+lá, a API aplica limites globais de 600 tentativas a cada 15 minutos e 100 cadastros
+por hora, além de 20 tentativas por e-mail a cada 15 minutos. Há no máximo dois
+hashes simultâneos por instância. Esta capacidade inicial não foi testada sob carga.
 
-O projeto Supabase deve ser escolhido e a migração verificada antes de mudar o
-link ativo. Não foi feita inspeção visual do app nem teste em produção Supabase
-durante a preparação. Não são enviadas mensagens a usuários pelos testes locais.
+O runtime Supabase publicado passou por cadastro, login, mensagens com aceite,
+grupos, rejeição de terceiros, estudo, recuperação de uso único, revogação e saída.
+As três contas e conversas sintéticas foram removidas ao terminar. Não foi feita
+inspeção visual no navegador.
+
+No Sites, `OJIISAN_BACKEND_MODE=freeze` bloqueia as escritas durante a cópia;
+`supabase` encaminha as APIs antigas ao novo servidor e redireciona a página
+inicial ao GitHub. Cada alteração exige publicar a versão salva para aplicar a
+revisão do ambiente. A rota `/api/legacy-profile` só comprova o ID do perfil antigo.
+
+O frontend usa a região do banco através do parâmetro oficial
+`forceFunctionRegion=sa-east-1`. Em caso de indisponibilidade regional, alterar
+a configuração requer nova compilação do frontend.
+
+Os avisos de segurança são informativos: RLS sem políticas é intencional neste
+schema privado, cuja API autentica e autoriza as operações no servidor.
+[Explicação do aviso](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+Os índices ainda sem uso são esperados em um banco novo e foram preservados
+para as consultas e chaves estrangeiras.
+[Explicação de índices sem uso](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index).
 
 Fontes oficiais verificadas:
 - [PostgreSQL em Edge Functions](https://supabase.com/docs/guides/functions/connect-to-postgres)
 - [Variáveis da função](https://supabase.com/docs/guides/functions/secrets)
 - [Compatibilidade Node/npm](https://supabase.com/blog/edge-functions-node-npm)
 - [Limites do runtime](https://supabase.com/docs/guides/functions/limits)
+
+- [Execução na região do banco](https://supabase.com/docs/guides/functions/regional-invocation)

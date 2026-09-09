@@ -34,6 +34,7 @@ type Mode="blocks"|"reading"|"japanese";
 const initial:Overview={me:null,rooms:[],people:[],invitations:[],blocks:[]};
 const errors:Record<string,[string,string]>={
   sign_in:["Sua sessão terminou. Entre novamente.","Your session ended. Please sign in again."],
+  maintenance:["Estamos atualizando o servidor. Aguarde alguns minutos.","We are updating the server. Please wait a few minutes."],
   unavailable:["Não foi possível conectar agora. Tente novamente.","Could not connect right now. Please try again."],
   invalid_input:["Confira os campos e tente novamente.","Check the fields and try again."],
   choose_people:["Escolha pelo menos uma pessoa.","Choose at least one person."],

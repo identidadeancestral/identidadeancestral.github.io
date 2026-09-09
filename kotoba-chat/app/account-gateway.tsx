@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import OjiisanApp from "./ojiisan-app";
 import AccountDialog, { type AccountMode, type AccountResult } from "./account-dialog";
-import { SERVER_ORIGIN } from "@/lib/frontend-config";
+import { SERVER_ORIGIN, apiEndpoint } from "@/lib/frontend-config";
 type Session={token?:string;expiresAt:number;email?:string;needsPassword:boolean;authType:"email"|"legacy"};
 const KEY="ojiisan-session",PENDING="ojiisan-pending-login",IGNORE="ojiisan-ignore-legacy";
 const validToken=(token:unknown):token is string=>typeof token==="string"&&/^(?:oj1_)?[A-Za-z0-9_-]{43}$/.test(token);
@@ -12,7 +12,7 @@ export default function AccountGateway({apiOrigin="",legacySignInPath="/signin-w
  const [session,setSession]=useState<Session|null>(null),[loading,setLoading]=useState(true),[notice,setNotice]=useState(""),[open,setOpen]=useState(false),[mode,setMode]=useState<AccountMode>("login");
  const started=useRef(false);
  const call=useCallback(async(body?:Record<string,string>,token?:string)=>{
-  const response=await fetch(apiOrigin+"/api/account",{method:body?"POST":"GET",credentials:apiOrigin?"omit":"same-origin",cache:"no-store",headers:{...(body?{"Content-Type":"application/json"}:{}),...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});
+  const response=await fetch(apiEndpoint(apiOrigin,"/api/account"),{method:body?"POST":"GET",credentials:apiOrigin?"omit":"same-origin",cache:"no-store",headers:{...(body?{"Content-Type":"application/json"}:{}),...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});
   const data=await response.json();if(!response.ok)throw new Error(data.error||"unavailable");return data;
  },[apiOrigin]);
  const clear=useCallback(()=>{try{sessionStorage.removeItem(KEY);sessionStorage.setItem(IGNORE,"1");}catch{}setSession(null);},[]);
@@ -24,7 +24,7 @@ export default function AccountGateway({apiOrigin="",legacySignInPath="/signin-w
     history.replaceState(null,"",location.pathname+location.search);
     const pending=JSON.parse(sessionStorage.getItem(PENDING)||"null");sessionStorage.removeItem(PENDING);
     if(!pending||pending.state!==hash.get("state")||Date.now()-pending.createdAt>10*60*1000)throw new Error("A confirmação do perfil anterior expirou. Tente novamente.");
-    const response=await fetch(apiOrigin+"/api/frontend-session",{method:"POST",credentials:"omit",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"exchange",code,verifier:pending.verifier})});
+    const response=await fetch(apiEndpoint(apiOrigin,"/api/frontend-session"),{method:"POST",credentials:"omit",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"exchange",code,verifier:pending.verifier})});
     saved=await response.json();if(!response.ok||!validToken(saved.token)||!Number.isFinite(saved.expiresAt)||saved.expiresAt<=Date.now())throw new Error("Não foi possível confirmar o perfil anterior.");
     sessionStorage.setItem(KEY,JSON.stringify(saved));sessionStorage.removeItem(IGNORE);
    }
