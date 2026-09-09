@@ -51,7 +51,9 @@ jobs:
           health, response_headers = read(api + '/health?forceFunctionRegion=sa-east-1', headers)
           value = json.loads(health)
           assert value.get('ok') is True and value.get('backend') == 'supabase', 'Database health failed'
+          assert value.get('protocol') == 2, 'Chat sync backend version is not deployed'
           assert response_headers.get('Access-Control-Allow-Origin') == origin, 'API CORS mismatch'
+          assert 'retry-after' in response_headers.get('Access-Control-Expose-Headers', '').lower(), 'Browser cannot read API retry delay'
           account, _ = read(api + '/api/account?forceFunctionRegion=sa-east-1', headers)
           assert json.loads(account).get('signedIn') is False, 'Public account gateway failed; check verify_jwt and custom auth'
 

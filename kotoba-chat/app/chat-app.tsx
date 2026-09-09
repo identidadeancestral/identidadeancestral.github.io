@@ -20,6 +20,7 @@ import BlockComposer from "./block-composer";
 import { defaultBlocks, type BlocksPayload } from "@/lib/method-blocks";
 import { suggestedReplies } from "@/lib/method-dialogue";
 import { jsonRequest, type AccessProps } from "@/lib/client-api";
+import { startPolling } from "@/lib/client-poll";
 import WordLibrary, { EBOOK_URL } from "./word-library";
 import { stories, storyById } from "@/lib/stories";
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -72,8 +73,8 @@ function ProfileForm({me,lang,onSave,busy}:{me:Profile|null;lang:Lang;onSave:(v:
     <Button type="submit" size="lg" disabled={busy} className="full-button">{busy?t("Salvando…","Saving…"):me?t("Salvar perfil","Save profile"):t("Criar meu perfil","Create my profile")}<ArrowUpRight/></Button>
   </form>;
 }
-export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessionToken,onSignOut,onSignIn,onManageAccount,langOverride,composeSeed,profileRequest}:AccessProps & {langOverride?:Lang;profileRequest?:number;composeSeed?:{payload:MessagePayload;id:number}}) {
-  const api=useCallback((path="",body?:unknown)=>jsonRequest("/api/chat"+path,body,apiOrigin,sessionToken),[apiOrigin,sessionToken]);
+export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessionToken,onSignOut,onSignIn,onManageAccount,langOverride,composeSeed,profileRequest,enabled=true}:AccessProps & {enabled?:boolean;langOverride?:Lang;profileRequest?:number;composeSeed?:{payload:MessagePayload;id:number}}) {
+  const api=useCallback((path="",body?:unknown,signal?:AbortSignal)=>jsonRequest("/api/chat"+path,body,apiOrigin,sessionToken,signal),[apiOrigin,sessionToken]);
   const [lang,setLang]=useState<Lang>("pt");
   const t=useCallback((pt:string,en:string)=>lang==="pt"?pt:en,[lang]);
   const [mode,setMode]=useState<Mode>("blocks");
@@ -129,27 +130,35 @@ export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessi
     catch(e){if(activeRef.current===id){setError(msgError(e));}}
     finally{if(activeRef.current===id)setRoomLoading(false);}
   },[msgError,updateMessages,api]);
-  const poll=useCallback(async()=>{
-    const id=activeRef.current;
-    if(!id)return;
-    const after=messagesRef.current.at(-1)?.id||0;
-    const result:RoomData=await api("?room="+encodeURIComponent(id)+"&after="+after);
+  const sync=useCallback(async(signal?:AbortSignal)=>{
+    const id=activeRef.current,after=messagesRef.current.at(-1)?.id||0;
+    const result:{overview:Overview;conversation:RoomData|null;roomError:string|null}=await api("",{action:"sync",roomId:id,after,lastRead:after},signal);
+    if(signal?.aborted)return;
+    setData({...initial,...result.overview});setLoading(false);setError("");
     if(activeRef.current!==id)return;
-    setRoomData(result);
-    if(result.messages.length){const map=new Map(messagesRef.current.map(m=>[m.id,m]));result.messages.forEach(m=>map.set(m.id,m));updateMessages(Array.from(map.values()).sort((a,b)=>a.id-b.id));}
-  },[updateMessages,api]);
+    if(result.roomError){
+      activeRef.current="";setActive("");setRoomData(null);updateMessages([]);setHasOlder(false);setRoomLoading(false);setError(msgError(new Error(result.roomError)));return;
+    }
+    if(result.conversation){
+      setRoomData(result.conversation);
+      const map=new Map(messagesRef.current.map(m=>[m.id,m]));
+      result.conversation.messages.forEach(m=>map.set(m.id,m));
+      updateMessages(Array.from(map.values()).sort((a,b)=>a.id-b.id));
+    }
+  },[updateMessages,api,msgError]);
   useEffect(()=>{
-    if(!signedIn)return;
-    let disposed=false,timer:ReturnType<typeof setTimeout>;
-    const sync=async()=>{
-      if(document.visibilityState==="hidden"){timer=setTimeout(sync,6000);return;}
-      try{const result=await overview();if(result.me){await api("",{action:"heartbeat",roomId:activeRef.current,lastRead:messagesRef.current.at(-1)?.id||0});await poll();}}
-      catch(e){if(!disposed){setError(msgError(e));setLoading(false);}}
-      if(!disposed)timer=setTimeout(sync,5000);
-    };
-    void sync();
-    return()=>{disposed=true;clearTimeout(timer);};
-  },[signedIn,overview,poll,msgError,api]);
+    if(!signedIn||!enabled)return;
+    return startPolling({
+      run:sync,
+      onError:e=>{setError(msgError(e));setLoading(false);},
+      isActive:()=>document.visibilityState!=="hidden"&&navigator.onLine,
+      subscribe:wake=>{
+        document.addEventListener("visibilitychange",wake);
+        window.addEventListener("online",wake);window.addEventListener("offline",wake);
+        return()=>{document.removeEventListener("visibilitychange",wake);window.removeEventListener("online",wake);window.removeEventListener("offline",wake);};
+      },
+    });
+  },[signedIn,enabled,sync,msgError]);
   useEffect(()=>{bottom.current?.scrollIntoView({behavior:"smooth",block:"end"});},[messages.at(-1)?.id,practice.length,active]);
   const act=async(body:unknown,success?:string)=>{
     setBusy(true);
@@ -174,7 +183,7 @@ export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessi
     const id=active,signature=JSON.stringify({id,payload});
     if(pendingSend.current?.signature!==signature)pendingSend.current={id:crypto.randomUUID(),signature};
     setBusy(true);
-    try{await api("",{action:"send",roomId:id,payload,clientId:pendingSend.current.id});pendingSend.current=null;setText("");await poll();await overview();}
+    try{await api("",{action:"send",roomId:id,payload,clientId:pendingSend.current.id});pendingSend.current=null;setText("");await sync();}
     catch(e){toast.error(msgError(e));}
     finally{setBusy(false);}
   };
@@ -242,7 +251,7 @@ export default function ChatApp({signedIn,signInPath,signOutPath,apiOrigin,sessi
     <Sheet open={!!word} onOpenChange={open=>{if(!open)setWord(null);}}><SheetContent className="word-sheet"><SheetHeader><SheetTitle>{t("Uma palavra de cada vez","One word at a time")}</SheetTitle><SheetDescription>{t("Observe a escrita e tente lembrar o sentido.","Look at the writing and try to recall its meaning.")}</SheetDescription></SheetHeader>{word&&<div className="word-detail"><span className="word-big" lang="ja">{word.jp}</span><p className="word-kana" lang="ja">{word.kana}</p><p className="word-romaji">{word.romaji}</p>{reveal?<><div className="word-meaning"><strong>{word[lang]}</strong></div><p>{(lang==="pt"?word.notePt:word.noteEn)||t("Observe a função da palavra nesta frase. Use o molde na conversa e depois tente lembrar sem a pista.","Notice the word’s role in this sentence. Use the pattern in a conversation, then recall it without the cue.")}</p><Button variant="outline" onClick={()=>setReveal(false)}>{t("Esconder a pista e tentar lembrar","Hide the cue and try to remember")}</Button></>:<Button onClick={()=>setReveal(true)}>{t("Revelar o sentido","Reveal the meaning")}</Button>}<div className="word-footnote">{word.grammar?t("A função da partícula depende da construção.","The particle’s role depends on the construction."):t("A cor identifica uma função; a escrita guarda a palavra.","Color identifies a role; the writing holds the word.")}</div></div>}</SheetContent></Sheet>
     <Dialog open={profileOpen} onOpenChange={setProfileOpen}><DialogContent className="scroll-dialog"><DialogHeader><DialogTitle>{t("Seu perfil","Your profile")}</DialogTitle><DialogDescription>{t("Escolha como aparece para a comunidade.","Choose how you appear to the community.")}</DialogDescription></DialogHeader><ProfileForm key={me?.id||"new"} me={me} lang={lang} busy={busy} onSave={async value=>{const r=await act(value,t("Perfil salvo.","Profile saved."));if(r)setProfileOpen(false);}}/>{data.blocks.length>0&&<div className="blocked-list"><h3><Shield/>{t("Pessoas bloqueadas","Blocked people")}</h3>{data.blocks.map(p=><div key={p.id}><span>{p.avatar} {p.nickname}</span><Button size="sm" variant="ghost" disabled={busy} onClick={()=>act({action:"unblock",targetId:p.id})}>{t("Desbloquear","Unblock")}</Button></div>)}</div>}<Button variant="outline" onClick={()=>{setProfileOpen(false);onManageAccount?.();}}>{t("E-mail e senha","Email and password")}</Button><Button variant="ghost" asChild><a href={signOutPath} target="_top" onClick={e=>{if(onSignOut){e.preventDefault();onSignOut();}}}><LogOut/>{t("Sair da conta","Sign out")}</a></Button></DialogContent></Dialog>
     <Dialog open={groupOpen} onOpenChange={setGroupOpen}><DialogContent className="scroll-dialog"><DialogHeader><DialogTitle>{t("Criar um grupo","Create a group")}</DialogTitle><DialogDescription>{t("As pessoas recebem um convite e escolhem participar. Até 25 participantes.","People receive an invitation and choose to join. Up to 25 members.")}</DialogDescription></DialogHeader><form className="profile-form" onSubmit={async e=>{e.preventDefault();const r=await act({action:"group",title:groupName,targets});if(r){setGroupOpen(false);setGroupName("");setTargets([]);await openRoom(r.roomId);}}}><div className="field"><Label htmlFor="group-name">{t("Nome do grupo","Group name")}</Label><Input id="group-name" value={groupName} onChange={e=>setGroupName(e.target.value)} required minLength={2} maxLength={60} placeholder={t("Japonês no dia a dia","Everyday Japanese")}/></div><div className="group-people">{!data.people.length?<p className="small-note">{t("Quando outra pessoa estiver disponível, ela aparecerá aqui para você convidar.","When another person is available, they will appear here for you to invite.")}</p>:data.people.map(p=><label key={p.id} className="group-person"><Checkbox checked={targets.includes(p.id)} onCheckedChange={checked=>setTargets(old=>checked?[...old,p.id]:old.filter(id=>id!==p.id))}/><span className="avatar">{p.avatar}</span><span>{p.nickname}<small>{p.language}</small></span></label>)}</div><Button disabled={busy||!targets.length} type="submit">{t("Criar e enviar convites","Create and send invitations")}</Button></form></DialogContent></Dialog>
-    <Sheet open={membersOpen} onOpenChange={setMembersOpen}><SheetContent className="members-sheet"><SheetHeader><SheetTitle>{title}</SheetTitle><SheetDescription>{t("Participantes da conversa","Conversation members")}</SheetDescription></SheetHeader><div className="members-content">{roomData?.members.map(p=><div className="member-row" key={p.id}><span className="avatar">{p.avatar}</span><div><strong>{p.nickname}</strong><small>{p.state==="active"?(p.id===room?.owner_id?t("Administração","Admin"):p.language):p.state==="pending"?t("Convite pendente","Invitation pending"):t("Saiu da conversa","Left the chat")}</small></div>{p.id!==me?.id&&<Button variant="ghost" size="sm" disabled={busy||data.blocks.some(b=>b.id===p.id)} onClick={async()=>{const r=await act({action:"block",targetId:p.id},t("Pessoa bloqueada.","Person blocked."));if(r){setMembersOpen(false);if(room?.kind==="dm")practiceRoom();else{updateMessages(messagesRef.current.filter(m=>m.user_id!==p.id));await poll();}}}}>{data.blocks.some(b=>b.id===p.id)?t("Bloqueada","Blocked"):t("Bloquear","Block")}</Button>}</div>)}{room?.kind==="group"&&room.owner_id===me?.id&&<section className="add-members"><h3>{t("Convidar para o grupo","Invite to the group")}</h3>{data.people.filter(p=>!roomData?.members.some(m=>m.id===p.id&&["active","pending"].includes(m.state||""))).map(p=><div className="member-row" key={p.id}><span>{p.avatar} {p.nickname}</span><Button variant="outline" size="sm" disabled={busy} onClick={async()=>{const r=await act({action:"invite",roomId:active,targetId:p.id},t("Convite enviado.","Invitation sent."));if(r)await poll();}}>{t("Convidar","Invite")}</Button></div>)}</section>}<p className="small-note">{t("Ao bloquear alguém, você deixa de ver as mensagens dessa pessoa e ela não pode convidar você. Em grupos compartilhados, as mensagens entre vocês também ficam ocultas.","Blocking hides that person’s messages and prevents invitations. In shared groups, messages between you are also hidden.")}</p><Button variant="outline" onClick={()=>setConfirmLeave(true)}><LogOut/>{t("Sair da conversa","Leave conversation")}</Button></div></SheetContent></Sheet>
+    <Sheet open={membersOpen} onOpenChange={setMembersOpen}><SheetContent className="members-sheet"><SheetHeader><SheetTitle>{title}</SheetTitle><SheetDescription>{t("Participantes da conversa","Conversation members")}</SheetDescription></SheetHeader><div className="members-content">{roomData?.members.map(p=><div className="member-row" key={p.id}><span className="avatar">{p.avatar}</span><div><strong>{p.nickname}</strong><small>{p.state==="active"?(p.id===room?.owner_id?t("Administração","Admin"):p.language):p.state==="pending"?t("Convite pendente","Invitation pending"):t("Saiu da conversa","Left the chat")}</small></div>{p.id!==me?.id&&<Button variant="ghost" size="sm" disabled={busy||data.blocks.some(b=>b.id===p.id)} onClick={async()=>{const r=await act({action:"block",targetId:p.id},t("Pessoa bloqueada.","Person blocked."));if(r){setMembersOpen(false);if(room?.kind==="dm")practiceRoom();else{updateMessages(messagesRef.current.filter(m=>m.user_id!==p.id));await sync();}}}}>{data.blocks.some(b=>b.id===p.id)?t("Bloqueada","Blocked"):t("Bloquear","Block")}</Button>}</div>)}{room?.kind==="group"&&room.owner_id===me?.id&&<section className="add-members"><h3>{t("Convidar para o grupo","Invite to the group")}</h3>{data.people.filter(p=>!roomData?.members.some(m=>m.id===p.id&&["active","pending"].includes(m.state||""))).map(p=><div className="member-row" key={p.id}><span>{p.avatar} {p.nickname}</span><Button variant="outline" size="sm" disabled={busy} onClick={async()=>{const r=await act({action:"invite",roomId:active,targetId:p.id},t("Convite enviado.","Invitation sent."));if(r)await sync();}}>{t("Convidar","Invite")}</Button></div>)}</section>}<p className="small-note">{t("Ao bloquear alguém, você deixa de ver as mensagens dessa pessoa e ela não pode convidar você. Em grupos compartilhados, as mensagens entre vocês também ficam ocultas.","Blocking hides that person’s messages and prevents invitations. In shared groups, messages between you are also hidden.")}</p><Button variant="outline" onClick={()=>setConfirmLeave(true)}><LogOut/>{t("Sair da conversa","Leave conversation")}</Button></div></SheetContent></Sheet>
     <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}><AlertDialogContent><AlertDialogTitle>{t("Sair desta conversa?","Leave this conversation?")}</AlertDialogTitle><AlertDialogDescription>{t("Você precisará de um novo convite para voltar.","You will need a new invitation to return.")}</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>{t("Cancelar","Cancel")}</AlertDialogCancel><AlertDialogAction disabled={busy} onClick={async e=>{e.preventDefault();const r=await act({action:"leave",roomId:active});if(r){setMembersOpen(false);setConfirmLeave(false);practiceRoom();}}}>{t("Sair da conversa","Leave conversation")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
 }

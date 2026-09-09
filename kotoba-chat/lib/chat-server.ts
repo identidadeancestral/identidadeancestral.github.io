@@ -47,12 +47,9 @@ export async function handleChat(req:Request,db:Database,authKey:string|null,fro
       }
       return r;
     };
-    if(req.method==="GET") {
-      if(!me)return json({me:null});
-      const u=new URL(req.url),roomId=u.searchParams.get("room");
-      if(roomId) {
+    const readConversation=async(roomId:string,before=0,after=0)=>{
+        if(!me)return fail("profile_required",409);
         const room=await member(roomId);
-        const before=Number(u.searchParams.get("before")||0),after=Number(u.searchParams.get("after")||0);
         if(!Number.isSafeInteger(before)||!Number.isSafeInteger(after)||before<0||after<0)return fail("invalid_input");
         const condition=before?" AND m.id<?":after?" AND m.id>?":"";
         const order=before||!after?"DESC":"ASC";
@@ -60,13 +57,20 @@ export async function handleChat(req:Request,db:Database,authKey:string|null,fro
         const list=await all("SELECT m.*,p.nickname,p.avatar FROM messages m JOIN profiles p ON p.id=m.user_id WHERE m.room_id=? AND "+blocked.replaceAll("p.id","m.user_id")+condition+" ORDER BY m.id "+order+" LIMIT 60",...values);
         if(order==="DESC")list.reverse();
         const people=await all("SELECT "+columns+",m.state FROM members m JOIN profiles p ON p.id=m.user_id WHERE m.room_id=? ORDER BY m.invited_at",roomId);
-        return json({room,messages:list.map(m=>({...m,payload:JSON.parse(m.payload)})),members:people,hasOlder:list.length===60&&order==="DESC"});
-      }
+        return {room,messages:list.map(m=>({...m,payload:JSON.parse(m.payload)})),members:people,hasOlder:list.length===60&&order==="DESC"};
+    };
+    const readOverview=async()=>{
+      if(!me)return {me:null};
       const conversations=await all("SELECT r.*,m.state,m.last_read, (SELECT count(*) FROM messages x WHERE x.room_id=r.id AND x.id>m.last_read AND x.user_id<>? AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.user_id=m.user_id AND b.target_id=x.user_id) OR (b.target_id=m.user_id AND b.user_id=x.user_id))) AS unread, (SELECT japanese FROM messages x WHERE x.room_id=r.id AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.user_id=m.user_id AND b.target_id=x.user_id) OR (b.target_id=m.user_id AND b.user_id=x.user_id)) ORDER BY id DESC LIMIT 1) AS last_message, (SELECT p.nickname FROM members x JOIN profiles p ON p.id=x.user_id WHERE x.room_id=r.id AND x.user_id<>? LIMIT 1) AS other_name, (SELECT p.avatar FROM members x JOIN profiles p ON p.id=x.user_id WHERE x.room_id=r.id AND x.user_id<>? LIMIT 1) AS other_avatar FROM rooms r JOIN members m ON m.room_id=r.id WHERE m.user_id=? AND m.state='active' AND NOT EXISTS (SELECT 1 FROM members x JOIN blocks b ON (b.user_id=? AND b.target_id=x.user_id) OR (b.target_id=? AND b.user_id=x.user_id) WHERE x.room_id=r.id AND r.kind='dm') ORDER BY r.updated_at DESC LIMIT 100",me.id,me.id,me.id,me.id,me.id,me.id);
       const people=await all("SELECT "+columns+" FROM profiles p WHERE p.id<>? AND p.available=1 AND p.last_seen>? AND "+blocked+" ORDER BY p.last_seen DESC LIMIT 100",me.id,now-75000,me.id,me.id);
       const invitations=await all("SELECT r.id,r.kind,r.title,p.nickname,p.avatar,m.invited_at FROM members m JOIN rooms r ON r.id=m.room_id JOIN profiles p ON p.id=m.inviter_id WHERE m.user_id=? AND m.state='pending' AND "+blocked+" ORDER BY m.invited_at DESC LIMIT 50",me.id,me.id,me.id);
       const blocks=await all("SELECT p.id,p.nickname,p.avatar FROM blocks b JOIN profiles p ON p.id=b.target_id WHERE b.user_id=?",me.id);
-      return json({me:publicMe(),rooms:conversations,people,invitations,blocks,serverTime:now});
+      return {me:publicMe(),rooms:conversations,people,invitations,blocks,serverTime:now};
+    };
+    if(req.method==="GET") {
+      if(!me)return json({me:null});
+      const u=new URL(req.url),roomId=u.searchParams.get("room");
+      return json(roomId?await readConversation(roomId,Number(u.searchParams.get("before")||0),Number(u.searchParams.get("after")||0)):await readOverview());
     }
     if(req.method!=="POST")return json({error:"method"},405);
     const origin=req.headers.get("origin");
@@ -78,6 +82,25 @@ export async function handleChat(req:Request,db:Database,authKey:string|null,fro
     const raw=await req.text();if(raw.length>10000)return fail("too_large",413);
     let b:Row;try{b=JSON.parse(raw);}catch{return fail("invalid_input");}
     if(!b||typeof b!=="object"||Array.isArray(b))return fail("invalid_input");
+    if(b.action==="sync") {
+      const roomId=b.roomId===undefined||b.roomId===""?null:string(b.roomId,1,80);
+      const after=b.after??0,lastRead=b.lastRead??0;
+      if(!Number.isSafeInteger(after)||after<0||!Number.isSafeInteger(lastRead)||lastRead<0)return fail("invalid_input");
+      if(!me)return json({overview:{me:null},conversation:null,roomError:null});
+      // Keep presence fresh without rewriting it every five seconds.
+      if(me.last_seen<now-30000){await run("UPDATE profiles SET last_seen=? WHERE id=?",now,me.id);me.last_seen=now;}
+      let conversation=null,roomError=null;
+      if(roomId){
+        try{
+          conversation=await readConversation(roomId,0,after);
+          if(lastRead>0)await run("UPDATE members SET last_read=MAX(last_read,?) WHERE room_id=? AND user_id=? AND state='active' AND last_read<?",lastRead,roomId,me.id,lastRead);
+        }catch(error){
+          if(!(error instanceof ChatError)||error.status!==403)throw error;
+          roomError=error.code;
+        }
+      }
+      return json({overview:await readOverview(),conversation,roomError});
+    }
     if(b.action==="profile") {
       const nickname=string(b.nickname,2,32),language=string(b.language,2,40);
       const level=["beginner","learning","advanced"].includes(b.level)?b.level:fail("invalid_input");

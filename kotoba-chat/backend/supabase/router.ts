@@ -5,6 +5,7 @@ import { handleAccount } from "../../lib/account-server";
 import { accountIdentity } from "../../lib/account-session";
 import { cors, frontendIdentity, preflight } from "../../lib/frontend-session";
 import { FRONTEND_ORIGIN, LEGACY_ORIGIN } from "../../lib/frontend-config";
+import { accountAllowance } from "./account-rate";
 type Options={legacyBridge?:boolean;fetcher?:typeof fetch};
 const reply=(req:Request,data:unknown,status=200)=>cors(req,Response.json(data,{status}));
 async function boundedBody(req:Request,max=10000) {
@@ -26,6 +27,7 @@ async function legacyIdentity(req:Request,db:Database,options:Options) {
  const row=await db.prepare("SELECT auth_key FROM profiles WHERE id=?").bind(data.me.id).first<{auth_key:string}>();return row?.auth_key||null;
 }
 export function createApi(db:Database,options:Options={}) {
+ let nextCleanup=0;
  return async function handle(request:Request) {
   try {
    if(request.method==="OPTIONS")return preflight(request);
@@ -37,7 +39,7 @@ export function createApi(db:Database,options:Options={}) {
    const req=new Request(request.url,{method:request.method,headers:request.headers,body});
    if(path==="/health"){
     if(req.method!=="GET")return reply(req,{error:"method"},405);
-    await db.prepare("SELECT 1 FROM profiles LIMIT 1").first();return reply(req,{ok:true,backend:"supabase",schema:1});
+    await db.prepare("SELECT 1 FROM profiles LIMIT 1").first();return reply(req,{ok:true,backend:"supabase",schema:1,protocol:2});
    }
    if(path==="/api/frontend-session"){
     if(!options.legacyBridge||req.method!=="POST")return reply(req,{error:"sign_in"},401);
@@ -51,6 +53,18 @@ export function createApi(db:Database,options:Options={}) {
     return handleAccount(req,db,legacy,"supabase-edge",{attempts:600,registrations:100});
    }
    const identity=await accountIdentity(req,db);
+   if(identity){
+    const now=Date.now();
+    const allowance=await accountAllowance(db,identity.auth_key,now);
+    if(!allowance.allowed){
+     const response=reply(req,{error:"slow_down"},429);
+     response.headers.set("Retry-After",String(allowance.retryAfter));return response;
+    }
+    if(now>=nextCleanup){
+     nextCleanup=now+60000;
+     await db.prepare("DELETE FROM account_rate_limits WHERE expires_at<=?").bind(now).run();
+    }
+   }
    return cors(req,path==="/api/chat"?await handleChat(req,db,identity?.auth_key||null,true):await handleStudy(req,db,identity?.auth_key||null,true));
   }catch(e){
    if(e instanceof Error&&e.message==="too_large")return reply(request,{error:"invalid_input"},413);

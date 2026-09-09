@@ -80,8 +80,44 @@ test('Postgres groups, administrator transfer and blocking retain access rules',
  assert.equal((await chat(a.data.token,null,'?room='+group)).status,403);
  assert.equal((await chat(b.data.token,{action:'block',targetId:pa.id})).status,200);
  assert.equal((await chat(a.data.token,null,'?room='+room)).status,403);
+ const blocked=await chat(a.data.token,{action:'sync',roomId:room});
+ assert.equal(blocked.status,200);assert.equal(blocked.data.conversation,null);assert.equal(blocked.data.roomError,'blocked');
+ assert.ok(!blocked.data.overview.rooms.some(r=>r.id===room));
  assert.equal((await chat(b.data.token,{action:'unblock',targetId:pa.id})).status,200);
  assert.equal((await chat(a.data.token,null,'?room='+room)).status,200);
+});
+test('one sync request refreshes presence and messages without bypassing membership or leaking identity',async()=>{
+ await db.prepare('UPDATE profiles SET last_seen=? WHERE id=?').bind(1,pb.id).run();
+ const first=await chat(b.data.token,{action:'sync',roomId:room});
+ assert.equal(first.status,200);assert.equal(first.data.overview.me.id,pb.id);assert.ok(first.data.overview.me.last_seen>1);
+ assert.equal(first.data.conversation.messages.length,1);assert.equal(first.data.roomError,null);
+ const last=first.data.conversation.messages.at(-1).id;
+ const next=await chat(b.data.token,{action:'sync',roomId:room,after:last,lastRead:last});
+ assert.equal(next.status,200);assert.equal(next.data.conversation.messages.length,0);
+ assert.equal(next.data.overview.rooms.find(r=>r.id===room).last_read,last);
+ assert.ok(!JSON.stringify(next.data).includes('auth_key'));assert.ok(!JSON.stringify(next.data).includes('postgres-b@example.test'));
+ const outsider=await chat(c.data.token,{action:'sync',roomId:room,after:0,lastRead:last});
+ assert.equal(outsider.status,200);assert.equal(outsider.data.conversation,null);assert.equal(outsider.data.roomError,'not_member');
+ assert.equal((await chat(b.data.token,{action:'sync',after:-1})).status,400);
+ assert.equal((await chat(null,{action:'sync'})).status,401);
+});
+test('account request limits are atomic, shared across sessions and readable across origins',async()=>{
+ const user=await account({action:'register',email:'rate@example.test',password});assert.equal(user.status,201);
+ const empty=await chat(user.data.token,{action:'sync'});assert.equal(empty.status,200);assert.equal(empty.data.overview.me,null);
+ const another=await account({action:'login',email:'rate@example.test',password});assert.equal(another.status,200);
+ const key=(await db.prepare('SELECT auth_key FROM email_accounts WHERE email=?').bind('rate@example.test').first()).auth_key;
+ const hash=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(key))).toString('base64url');
+ const window=Math.floor(Date.now()/60000);
+ // Cover a possible minute boundary without altering any production clock.
+ for(let w=window;w<=window+1;w++)await db.prepare('INSERT INTO account_rate_limits(bucket,hits,expires_at) VALUES(?,119,?) ON CONFLICT(bucket) DO UPDATE SET hits=119').bind('api:'+hash+':'+w,(w+1)*60000).run();
+ const results=await Promise.all([chat(user.data.token),chat(another.data.token),call('/api/study',null,user.data.token)]);
+ assert.deepEqual(results.map(r=>r.status).sort(),[200,429,429]);
+ for(const r of results.filter(r=>r.status===429)){
+  assert.equal(r.data.error,'slow_down');assert.ok(Number(r.headers.get('Retry-After'))>=1);assert.ok(Number(r.headers.get('Retry-After'))<=60);
+  assert.equal(r.headers.get('Access-Control-Expose-Headers'),'Retry-After');
+ }
+ assert.equal((await chat(b.data.token)).status,200);
+ assert.equal((await chat('oj1_'+'x'.repeat(43))).status,401);
 });
 test('Postgres study progress belongs to its learner',async()=>{
  assert.equal((await call('/api/study',{storyId:'method:consume',rating:'remembered'},a.data.token)).status,200);

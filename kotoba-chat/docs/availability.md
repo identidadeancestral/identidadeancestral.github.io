@@ -26,8 +26,9 @@ O arquivo `github/workflows/ojiisan-health.yml` é publicado no repositório
 O cron `17 10 */3 * *` executa às 10:17 UTC nos dias 1, 4, 7 etc. do mês,
 com intervalos de no máximo três dias. Também pode ser executado manualmente,
 ao atualizar o próprio workflow ou depois de uma publicação do Pages.
-Ele consulta o banco pelo endpoint `/health`, verifica o acesso público inicial
-de conta, o CORS e o CSP do HTML publicado. Não cria usuários nem mensagens,
+Ele consulta o banco pelo endpoint `/health`, exige o protocolo 2 com sync,
+verifica o acesso público inicial de conta, o CORS (incluindo `Retry-After`)
+e o CSP do HTML publicado. Não cria usuários nem mensagens,
 não usa chave administrativa e não possui permissão de escrita no repositório.
 
 Isso verifica disponibilidade e gera atividade real de consulta, mas não é uma
@@ -41,6 +42,15 @@ desativa workflows agendados de repositórios públicos após 60 dias sem ativid
 no repositório. Conferir o histórico do workflow e os avisos dos provedores.
 
 ## Limites que permanecem
+
+A atualização automática combina presença, pessoas e mensagens em uma chamada,
+em vez das três de uma conversa aberta. Para na tela Aprender, em aba oculta e
+sem rede. Falhas aumentam o intervalo até 60 segundos; um `Retry-After` maior tem
+prioridade. Chat e estudo compartilham um limite de 120 pedidos por conta por
+minuto no PostgreSQL, independente do número de sessões. Esses controles foram
+verificados nos testes de sync, permissões, concorrência e espera do cliente.
+Os requisitos ainda pendentes da proteção externa estão em
+[backend/gateway/README.md](../backend/gateway/README.md).
 
 `verify_jwt=false` é intencional: a API valida suas próprias sessões opacas.
 Há limites persistidos de 600 operações de autenticação por 15 minutos,

@@ -7,7 +7,7 @@ import {build} from 'esbuild';
 import {alignApiCsp,assertApiCsp} from '../github/csp.mjs';
 const dir=await mkdtemp(join(tmpdir(),'ojiisan-production-client-'));
 await build({entryPoints:['lib/api-response.ts'],outfile:join(dir,'response.mjs'),bundle:true,platform:'node',format:'esm'});
-const {readApiResponse}=await import(join(dir,'response.mjs'));
+const {readApiResponse,ApiError}=await import(join(dir,'response.mjs'));
 test('production CSP rejects the migration regression and follows an API origin change',async()=>{
  const html=await readFile('github/index.html','utf8'),base='https://yediixixaxqcwzymhcxf.supabase.co/functions/v1/ojiisan-api';
  const broken=html.replace("connect-src 'self' https://yediixixaxqcwzymhcxf.supabase.co","connect-src https://kotoba-chat-identidadeancestral.aaaaasssdd.chatgpt.site");
@@ -24,3 +24,9 @@ test('gateway failures preserve sessions while explicit application expiry revok
  await assert.rejects(readApiResponse(Response.json({error:'sign_in'},{status:401}),revoke),/sign_in/);assert.equal(expired,1);
 });
 test.after(()=>rm(dir,{recursive:true,force:true}));
+test('server retry delays survive JSON and infrastructure errors',async()=>{
+ for(const response of [Response.json({error:'slow_down'},{status:429,headers:{'Retry-After':'45'}}),new Response('Temporarily unavailable',{status:503,headers:{'Retry-After':'45'}})]){
+  await assert.rejects(readApiResponse(response),error=>error instanceof ApiError&&error.retryAfterMs===45000&&[429,503].includes(error.status));
+ }
+ await assert.rejects(readApiResponse(new Response('',{status:502,headers:{'Retry-After':'invalid'}})),error=>error.retryAfterMs===0);
+});

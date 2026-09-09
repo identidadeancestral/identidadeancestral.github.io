@@ -72,6 +72,16 @@ sessão; nunca recebe conexão do banco, segredo do projeto ou chave de serviço
 
 ## Limites e verificações
 
+O protocolo 2 acrescenta `action: "sync"` ao chat: uma chamada atualiza presença,
+lista de pessoas e mensagens da conversa autorizada. O cliente pausa as consultas
+na tela Aprender, em aba oculta e sem rede; falhas usam espera progressiva e
+`Retry-After`. As rotas antigas continuam compatíveis com versões já abertas.
+O servidor limita chat e estudo a 120 pedidos por conta por minuto, somando as
+sessões dessa conta e usando contador atômico no PostgreSQL. Isso limita trabalho
+no banco, mas não impede a cobrança da invocação recebida pelo Supabase.
+Veja [a preparação da proteção externa](../gateway/README.md) para os requisitos
+que ainda precisam ser resolvidos antes de ativar um gateway.
+
 A identidade de IP encaminhada pelo Supabase precisa ser confirmada antes de
 ativar limites por IP: cabeçalhos enviados pelo cliente não são confiáveis. Até
 lá, a API aplica limites globais de 600 tentativas a cada 15 minutos e 100 cadastros

@@ -103,7 +103,8 @@ Preserva as APIs, os blocos, a autenticação por senha e os identificadores
 existentes. Consulte `backend/supabase/README.md` para publicação e transição.
 Os dados de produção não fazem parte deste repositório.
 
-Foram verificados 36 testes locais, incluindo dez com PostgreSQL via PGlite e
+Foram verificados 44 testes locais, incluindo doze com PostgreSQL via PGlite,
+três de consulta periódica e espera, três de CSP/respostas HTTP e
 dois de congelamento/encaminhamento. O runtime publicado também passou por
 cadastro, login, mensagens com aceite, grupos, bloqueio de terceiros, estudo,
 recuperação e revogação usando três contas sintéticas removidas ao terminar.

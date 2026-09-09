@@ -6,7 +6,7 @@ export const randomToken=()=>btoa(String.fromCharCode(...crypto.getRandomValues(
 export async function digest(value:string) {return btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value))))).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");}
 export function cors(req:Request,response:Response) {
  const headers=new Headers(response.headers);headers.set("Cache-Control","no-store");headers.set("Vary","Origin, Cookie");headers.set("X-Content-Type-Options","nosniff");
- if(req.headers.get("origin")===FRONTEND_ORIGIN){headers.set("Access-Control-Allow-Origin",FRONTEND_ORIGIN);headers.set("Access-Control-Allow-Methods","GET, POST, OPTIONS");headers.set("Access-Control-Allow-Headers","Authorization, Content-Type");headers.set("Access-Control-Max-Age","600");}
+ if(req.headers.get("origin")===FRONTEND_ORIGIN){headers.set("Access-Control-Allow-Origin",FRONTEND_ORIGIN);headers.set("Access-Control-Allow-Methods","GET, POST, OPTIONS");headers.set("Access-Control-Allow-Headers","Authorization, Content-Type");headers.set("Access-Control-Expose-Headers","Retry-After");headers.set("Access-Control-Max-Age","600");}
  return new Response(response.body,{status:response.status,headers});
 }
 export function preflight(req:Request) {return cors(req,new Response(null,{status:req.headers.get("origin")===FRONTEND_ORIGIN?204:403}));}

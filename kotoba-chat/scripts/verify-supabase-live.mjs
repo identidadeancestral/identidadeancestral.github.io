@@ -17,7 +17,7 @@ async function call(path,body,token,expected=200,extra={}){
 }
 const account=(body,token,status=200)=>call('/api/account',body,token,status);
 const chat=(token,body,status=200,path='')=>call('/api/chat'+path,body,token,status);
-assert.equal((await call('/health')).backend,'supabase');
+const health=await call('/health');assert.equal(health.backend,'supabase');assert.equal(health.protocol,2);
 await chat(null,null,401);
 await call('/api/account',{action:'register'},null,403,{Origin:'https://attacker.example'});
 const users=[];
@@ -38,6 +38,13 @@ await chat(b.token,{action:'accept',roomId:room});
 const sent=await chat(a.token,send);assert.equal(typeof sent.id,'number');assert.equal((await chat(a.token,send)).id,sent.id);
 assert.equal((await chat(b.token,null,200,'?room='+room)).messages[0].japanese,send.payload.text);
 await chat(c.token,null,403,'?room='+room);
+const combined=await chat(b.token,{action:'sync',roomId:room,lastRead:sent.id});
+assert.equal(combined.overview.me.id,manifest.profileIds[1]);assert.equal(combined.conversation.messages[0].id,sent.id);assert.equal(combined.roomError,null);
+assert.equal(combined.overview.rooms.find(r=>r.id===room).last_read,sent.id);
+assert.equal((await chat(b.token,{action:'sync',roomId:room,after:sent.id,lastRead:sent.id})).conversation.messages.length,0);
+const outsider=await chat(c.token,{action:'sync',roomId:room});assert.equal(outsider.conversation,null);assert.equal(outsider.roomError,'not_member');
+assert.ok(!JSON.stringify(combined).includes('auth_key'));
+console.log('PASS deployed combined sync, read acknowledgement and private membership');
 console.log('PASS deployed conversation, consent, persistence and outsider protection');
 const group=(await chat(a.token,{action:'group',title:'Verificação privada',targets:[manifest.profileIds[1],manifest.profileIds[2]]})).roomId;assert.ok(group);manifest.roomIds.push(group);await save();
 await chat(b.token,{action:'accept',roomId:group});await chat(c.token,{action:'accept',roomId:group});
