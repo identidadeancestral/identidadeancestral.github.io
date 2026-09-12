@@ -6,6 +6,7 @@ import { accountIdentity } from "../../lib/account-session";
 import { cors, frontendIdentity, preflight } from "../../lib/frontend-session";
 import { FRONTEND_ORIGIN, LEGACY_ORIGIN } from "../../lib/frontend-config";
 import { accountAllowance } from "./account-rate";
+import { createVisitHandler } from "./visits";
 type Options={legacyBridge?:boolean;fetcher?:typeof fetch};
 const reply=(req:Request,data:unknown,status=200)=>cors(req,Response.json(data,{status}));
 async function boundedBody(req:Request,max=10000) {
@@ -27,6 +28,7 @@ async function legacyIdentity(req:Request,db:Database,options:Options) {
  const row=await db.prepare("SELECT auth_key FROM profiles WHERE id=?").bind(data.me.id).first<{auth_key:string}>();return row?.auth_key||null;
 }
 export function createApi(db:Database,options:Options={}) {
+ const visits=createVisitHandler(db);
  let nextCleanup=0;
  return async function handle(request:Request) {
   try {
@@ -34,9 +36,10 @@ export function createApi(db:Database,options:Options={}) {
    if(request.headers.get("origin")!==FRONTEND_ORIGIN)return reply(request,{error:"origin"},403);
    if(!["GET","POST"].includes(request.method))return reply(request,{error:"method"},405);
    const path=new URL(request.url).pathname.replace(/^\/functions\/v1\/ojiisan-api/,"").replace(/^\/ojiisan-api/,"");
-   if(!["/api/account","/api/chat","/api/study","/api/frontend-session","/health"].includes(path))return reply(request,{error:"not_found"},404);
-   const body=request.method==="POST"?await boundedBody(request,path==="/api/account"?8192:10000):null;
+   if(!["/api/account","/api/chat","/api/study","/api/frontend-session","/api/visits","/health"].includes(path))return reply(request,{error:"not_found"},404);
+   const body=request.method==="POST"?await boundedBody(request,path==="/api/visits"?256:path==="/api/account"?8192:10000):null;
    const req=new Request(request.url,{method:request.method,headers:request.headers,body});
+   if(path==="/api/visits")return cors(req,await visits(req));
    if(path==="/health"){
     if(req.method!=="GET")return reply(req,{error:"method"},405);
     await db.prepare("SELECT 1 FROM profiles LIMIT 1").first();return reply(req,{ok:true,backend:"supabase",schema:1,protocol:2});

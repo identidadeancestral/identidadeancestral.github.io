@@ -1,5 +1,5 @@
 import type { Database, Statement } from "../../lib/chat-server";
-export const tables=["profiles","rooms","members","messages","blocks","frontend_codes","frontend_sessions","study_progress","email_accounts","account_sessions","account_rate_limits"] as const;
+export const tables=["profiles","rooms","members","messages","blocks","frontend_codes","frontend_sessions","study_progress","email_accounts","account_sessions","account_rate_limits","visit_totals","visit_sessions"] as const;
 type Row=Record<string,unknown>;
 export type Query=(text:string,values:unknown[])=>Promise<Row[]>;
 export type Transaction=<T>(work:(query:Query)=>Promise<T>)=>Promise<T>;

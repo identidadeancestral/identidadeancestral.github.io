@@ -28,7 +28,9 @@ Chat para aprender japonês com outras pessoas, baseado no Método 100 Blocos de
 - Nove formas para cada verbo: dicionário, polida, negativa polida, passado polido, passado negativo polido, negativa simples, passado simples, passado negativo simples e forma て.
 - Sete formas de adjetivos, distinguindo い e な, incluindo uso antes de substantivos. Grupos de verbos explícitos e exceções como 行く, 来る, ある e いい.
 - Envio de palavras nas formas selecionadas como cartões de estudo; leitura sem tradução para recuperação ativa.
-- Link do ebook fornecido pelo autor: https://hotmart.com/pt-br/club/toshiro-umeda. O link abre a página Hotmart informada; o app não processa compras nem verifica assinaturas.
+- Link do ebook fornecido pelo autor: https://go.hotmart.com/I106086478T. O link abre a página Hotmart informada; o app não processa compras nem verifica assinaturas.
+- Tema: vermelho nos destaques e nos verbos, com fundos amarelo creme de baixa opacidade; o texto mantém contraste nos modos claro e escuro.
+- Contador público: visitas a partir da ativação, uma por sessão de 30 minutos em cada aba. O total é salvo no Supabase; não representa pessoas únicas nem reconstrói visitas anteriores. A sessão usa um identificador aleatório temporário, sem ligação com contas. O contador não armazena IP, e-mail ou referência de origem; hashes para evitar duplicação são eliminados após 24 horas. Sem atualização periódica em segundo plano.
 - Leitura de palavras, kana, romanização, significado e pistas de memória em português e inglês.
 - Bloqueio de pessoas, controle de disponibilidade e verificação de participação em todas as rotas.
 

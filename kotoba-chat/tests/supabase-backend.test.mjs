@@ -28,10 +28,10 @@ async function profile(token,name){const r=await chat(token,{action:'profile',ni
 let a,b,c,pa,pb,pc,room,group;
 test('Postgres schema keeps all app tables private from public browser roles',async()=>{
  const rows=(await pg.query("SELECT tablename,rowsecurity FROM pg_tables WHERE schemaname='ojiisan'")).rows;
- assert.equal(rows.length,11);assert.ok(rows.every(r=>r.rowsecurity));
+ assert.equal(rows.length,13);assert.ok(rows.every(r=>r.rowsecurity));
  for(const role of ['anon','authenticated']){
   await pg.exec('SET ROLE '+role);
-  try{await assert.rejects(pg.query('SELECT * FROM ojiisan.email_accounts'),/permission denied/);await assert.rejects(pg.query('SELECT * FROM ojiisan.messages'),/permission denied/);}finally{await pg.exec('RESET ROLE');}
+  try{await assert.rejects(pg.query('SELECT * FROM ojiisan.email_accounts'),/permission denied/);await assert.rejects(pg.query('SELECT * FROM ojiisan.messages'),/permission denied/);await assert.rejects(pg.query('SELECT * FROM ojiisan.visit_sessions'),/permission denied/);await assert.rejects(pg.query("UPDATE ojiisan.visit_totals SET visits=999999"),/permission denied/);}finally{await pg.exec('RESET ROLE');}
  }
 });
 test('SQL parameters, identifiers, quoted question marks and atomic batches survive migration',async()=>{
@@ -173,5 +173,35 @@ test('snapshot import preserves identifiers, credentials and history, rejects pa
   const largest=Math.max(...snapshot.tables.messages.rows.map(r=>r.id));
   const next=await target.query('INSERT INTO ojiisan.messages(client_id,room_id,user_id,japanese,payload,created_at) VALUES($1,$2,$3,$4,$5,$6) RETURNING id',['after-import',room,pa.id,'こんにちは。','{}',Date.now()]);assert.ok(next.rows[0].id>largest);
  }finally{await target.close();}
+});
+test('public visits persist and count concurrent sessions once without storing identities',async()=>{
+ const initial=await call('/api/visits');assert.equal(initial.status,200);assert.equal(initial.data.visits,0);
+ const id=crypto.randomUUID();
+ const duplicates=await Promise.all(Array.from({length:8},()=>call('/api/visits',{visitId:id})));
+ assert.ok(duplicates.every(r=>r.status===200&&r.data.visits===1));
+ const more=await Promise.all(Array.from({length:12},()=>call('/api/visits',{visitId:crypto.randomUUID()})));
+ assert.ok(more.every(r=>r.status===200));
+ const freshApi=createApi(db);
+ const total=await freshApi(new Request(base+'/api/visits',{headers:{Origin:origin}}));
+ assert.equal((await total.json()).visits,13);
+ const rows=(await pg.query('SELECT * FROM ojiisan.visit_sessions')).rows;
+ assert.equal(rows.length,13);assert.ok(rows.every(r=>/^[A-Za-z0-9_-]{43}$/.test(r.session_hash)&&r.expires_at>Date.now()));
+ assert.ok(!JSON.stringify(rows).includes(id));assert.equal((await chat(null)).status,401);
+});
+test('visits reject malformed payloads and other origins without changing the total',async()=>{
+ for(const visitId of ['',123,null,'arbitrary-value'])assert.equal((await call('/api/visits',{visitId})).status,400);
+ assert.equal((await call('/api/visits',{visitId:crypto.randomUUID(),padding:'x'.repeat(300)})).status,413);
+ assert.equal((await call('/api/visits',{visitId:crypto.randomUUID()},null,{Origin:'https://attacker.example'})).status,403);
+ assert.equal((await call('/api/visits')).data.visits,13);
+});
+test('expired anonymous visit records are cleaned up and the counter has a bounded write budget',async()=>{
+ await pg.query('INSERT INTO ojiisan.visit_sessions(session_hash,expires_at) VALUES($1,$2)',['0'.repeat(43),Date.now()-1]);
+ const freshApi=createApi(db);
+ assert.equal((await freshApi(new Request(base+'/api/visits',{headers:{Origin:origin}}))).status,200);
+ assert.equal((await pg.query('SELECT count(*) AS n FROM ojiisan.visit_sessions WHERE session_hash=$1',['0'.repeat(43)])).rows[0].n,0);
+ await pg.query("UPDATE ojiisan.account_rate_limits SET hits=600 WHERE bucket=$1",['visits:'+Math.floor(Date.now()/60000)]);
+ const limited=await call('/api/visits',{visitId:crypto.randomUUID()});
+ assert.equal(limited.status,429);assert.ok(Number(limited.headers.get('Retry-After'))>0);
+ assert.equal((await pg.query("SELECT visits FROM ojiisan.visit_totals WHERE id='main'")).rows[0].visits,13);
 });
 test.after(async()=>{await pg.close();await rm(temporary,{recursive:true,force:true});});

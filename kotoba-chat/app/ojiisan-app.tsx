@@ -11,6 +11,7 @@ import WordLibrary, { EBOOK_URL } from "./word-library";
 import BlockComposer from "./block-composer";
 import MessageBlocks, { BlockLegend, MessageExplanation } from "./message-blocks";
 import MethodConversation from "./method-conversation";
+import VisitCounter from "./visit-counter";
 import { stories } from "@/lib/stories";
 import { compose, type Lang, type MessagePayload } from "@/lib/vocabulary";
 import { defaultBlocks, methodPatterns, patternById, type BlocksPayload } from "@/lib/method-blocks";
@@ -80,6 +81,7 @@ export default function OjiisanApp(access:AccessProps) {
    <footer className="learning-footer"><a href={EBOOK_URL} target="_blank" rel="noopener noreferrer">{t("O método completo no ebook","The full method in the ebook")}<ChevronRight/></a><span>Wagner Toshiro Umeda</span><p>{t("10 moldes iniciais dos 100 blocos do livro. As cores são uma ajuda criada para o app.","10 starting patterns from the book's 100 blocks. Colors are an aid created for the app.")}</p></footer>
   </main>}
   {chatVisited&&<div hidden={view!=="chat"} className="simple-chat"><ChatApp {...access} enabled={view==="chat"} langOverride={lang} composeSeed={seed} profileRequest={profileRequest}/></div>}
+  <VisitCounter lang={lang}/>
   <WordLibrary open={library} onOpenChange={setLibrary} lang={lang} busy={false} onUse={goChat}/>
   <Dialog open={example} onOpenChange={setExample}><DialogContent className="conversation-example-dialog"><DialogHeader><DialogTitle>{t("Uma conversa com poucos moldes","A conversation with a few patterns")}</DialogTitle><DialogDescription>{t("Exemplo guiado · personalize e depois use com outra pessoa.","Guided example · personalize it, then use it with another person.")}</DialogDescription></DialogHeader><MethodConversation lang={lang} onUse={goChat}/></DialogContent></Dialog>
  </div>;

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { entries, entryById, categoryCounts, type Category } from "@/lib/study-data";
 import { formsFor, romanize, entryNote } from "@/lib/japanese";
 import type { Lang, MessagePayload } from "@/lib/vocabulary";
-export const EBOOK_URL="https://hotmart.com/pt-br/club/toshiro-umeda";
+export const EBOOK_URL="https://go.hotmart.com/I106086478T";
 export default function WordLibrary({open,onOpenChange,lang,onUse,busy,initialEntry}:{open:boolean;onOpenChange:(v:boolean)=>void;lang:Lang;onUse:(p:MessagePayload)=>void;busy:boolean;initialEntry?:string}) {
  const t=(pt:string,en:string)=>lang==="pt"?pt:en;
  const [showPictures,setShowPictures]=useState(false);

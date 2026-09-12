@@ -84,3 +84,18 @@ REVOKE ALL ON ALL SEQUENCES IN SCHEMA ojiisan FROM PUBLIC, anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA ojiisan REVOKE ALL ON TABLES FROM PUBLIC, anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA ojiisan REVOKE ALL ON SEQUENCES FROM PUBLIC, anon, authenticated;
 COMMIT;
+
+-- Additive visit counter schema, also applied through Supabase migration history.
+CREATE TABLE ojiisan.visit_totals (
+ id text PRIMARY KEY CHECK (id='main'),
+ visits bigint NOT NULL DEFAULT 0 CHECK (visits>=0),
+ started_at bigint NOT NULL
+);
+CREATE TABLE ojiisan.visit_sessions (
+ session_hash text PRIMARY KEY CHECK (length(session_hash)=43),
+ expires_at bigint NOT NULL
+);
+CREATE INDEX idx_visit_sessions_expiry ON ojiisan.visit_sessions(expires_at);
+ALTER TABLE ojiisan.visit_totals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ojiisan.visit_sessions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON ojiisan.visit_totals, ojiisan.visit_sessions FROM PUBLIC, anon, authenticated;
